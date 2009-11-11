@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <script src="../../lib/jquery-1.3.2.js"></script>
+  <script src="../testrunner.js"></script>
+  <script src="../../build/js/CF_full_min.js"></script>
+  <link rel="stylesheet" href="../testsuite.css" type="text/css" media="screen" />
+  <script>
+
+jQuery(function ()
+{
+	test("Simple base case with three elements in an array", function (){
+		
+		expect(1);
+		var elem1 = document.createElement("div");
+		var elem2 = document.createElement("div");
+		var elem3 = document.createElement("div");
+		
+		var tgt = document.createElement("div");
+		var df = CF.docFrag([elem1, elem2, elem3]);
+		tgt.appendChild(df);
+		equals(tgt.innerHTML, "<div></div><div></div><div></div>");
+		
+	});
+	
+	test("Non array (single element) input", function (){
+		expect(1);
+		var elem1 = document.createElement("div");		
+		var tgt = document.createElement("div");
+		var df = CF.docFrag(elem1);
+		tgt.appendChild(df);
+		equals(tgt.innerHTML, "<div></div>");
+	});
+	
+	test("Non array (single element) html string input", function (){
+		expect(1);		
+		var tgt = document.createElement("div");
+		var df = CF.docFrag("this <p>is cool</p>");
+		tgt.appendChild(df);
+		equals(tgt.innerHTML,"this <p>is cool</p>");
+	});
+	
+	test("Mixing strings with elements", function (){
+		expect(1);
+		var elem1 = document.createElement("div");
+		var elem2 = "this is a string";
+		var elem3 = document.createElement("div");
+		
+		var tgt = document.createElement("div");
+		var df = CF.docFrag([elem1, elem2, elem3]);
+		tgt.appendChild(df);
+		equals(tgt.innerHTML, "<div></div>this is a string<div></div>");
+	});
+	
+	test("Mixing strings with elements and nested DocFrags", function (){
+		
+		expect(1);
+		var elem1 = document.createElement("div");
+		var elem2 = "this is a string";
+		var elem3 = CF.docFrag(["test"]);
+		
+		var tgt = document.createElement("div");
+		var df = CF.docFrag([elem1, elem2, elem3]);
+		tgt.appendChild(df);
+		equals(tgt.innerHTML, "<div></div>this is a stringtest");
+	});
+	
+	test("Nested arrays with nested docFrags", function (){
+		expect(1);
+		var elem1 = document.createElement("div");
+		var elem2 = "this is a string";
+		var elem3 = ["test", CF.docFrag(" cool")];
+		
+		var tgt = document.createElement("div");
+		var df = CF.docFrag([elem1, elem2, elem3]);
+		tgt.appendChild(df);
+		equals(tgt.innerHTML, "<div></div>this is a stringtest cool");
+	});
+	
+	test("TextNodes appended properly", function (){
+		expect(1);
+		var elem1 = document.createElement("div");
+		var elem2 = "this is a string";
+		var elem3 = document.createTextNode(" it was made with a textnode");
+		
+		var tgt = document.createElement("div");
+		var df = CF.docFrag([elem1, elem2, elem3]);
+		tgt.appendChild(df);
+		equals(tgt.innerHTML, "<div></div>this is a string it was made with a textnode");
+	});
+	
+	test("Strings with html in them", function (){
+		expect(1);
+		var elem1 = document.createElement("div");
+		var elem2 = "this is a <b>string</b>";
+		
+		var tgt = document.createElement("div");
+		var df = CF.docFrag([elem1, elem2]);
+		tgt.appendChild(df);
+		equals(tgt.innerHTML, "<div></div>this is a <b>string</b>");
+	});
+	
+	test("Strings with no html, but html entities in", function (){
+		expect(1);
+		var elem1 = document.createElement("div");
+		var elem2 = "this is ian&apos;s &quot;test &amp; string&quot;";
+		
+		var tgt = document.createElement("div");
+		var df = CF.docFrag([elem1, elem2]);
+		//grabbing the value using innerHTML will re-encode the ampersand value as "&amp; need to traverse to get the real textnode value"
+		equals(df.childNodes[1].nodeValue, "this is ian's \"test & string\"");
+	});
+	
+	test("Strings with html and html entities in", function (){
+		expect(1);
+		var elem1 = document.createElement("div");
+		var elem2 = "<p>this is ian&apos;s &quot;test &amp; string&quot;</p>";
+		
+		var tgt = document.createElement("div");
+		var df = CF.docFrag([elem1, elem2]);
+		tgt.appendChild(df);
+		equals(tgt.innerHTML, "<div></div><p>this is ian's \"test &amp; string\"</p>");
+	});
+	
+	
+});
+	
+  </script>
+	
+</head>
+<body>
+  
+ <h1>Document Fragment Tests</h1>
+ <h2 id="banner"></h2>
+ <h2 id="userAgent"></h2>
+
+ <ol id="tests"></ol>
+
+ <div id="main"></div>
+ 
+ 
+ 
+ 
+</body>
+</html>

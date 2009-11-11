@@ -1,0 +1,643 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <script src="../../lib/jquery-1.3.2.js"></script>
+  <script src="../testrunner.js"></script>
+  <script src="../../build/js/CF_full_min.js"></script>
+  <link rel="stylesheet" href="../testsuite.css" type="text/css" media="screen" />
+  <script>
+
+	  /**
+	  * Setup of some global object that will be used by the tests.
+	  */
+  	var myvar = {something:"rad", someUrl:"http://crowdfactory.com", somethingElse:{anotherThing:"Wow"}};
+	var myTest = "cool";
+	var numericValue = 5;
+	var forData1 = ["Gorillas", "Robots", "Pumas", "Bees", "Sharks", "Spaceships"];
+	var emptyList = [];
+	var forData2 = ["Hampsters", "Kittens", "Snails", "Donkeys", "Rabbits"];
+	var complexList= [
+		{
+		  name:"larry", 
+		  feelings:	[
+		  {
+		     emotion:"happy", 
+		  	 events:["birthdays","weekends"]
+		  },
+		  {
+		  	 emotion:"angry",
+		  	 events:["traffic jams", "bar fights"]
+		  }
+		  ]
+		},
+		{
+		  name:"frank", 
+		  feelings:	[
+		  {
+		     emotion:"sad", 
+		  	 events:["funerals","goodbyes"]
+		  },
+		  {
+		  	 emotion:"tired",
+		  	 events:["working late", "running marathons"]
+		  }
+		  ]
+		}
+	];
+  
+  
+  CF.widget.TestWidgetDefaultTemplate = function (targetElem, template, templateEngine, data, options)
+  {
+  	var that = CF.widget.SimpleWidget(targetElem, template, templateEngine, data, options);
+  	
+  	that.getDefaultTemplateBody = function()
+  	{
+  		return "This is my default template body";
+  	}
+  	return that;
+  }
+  
+  jQuery(function(){
+
+	//IE has problems preserving whitespace, and there is nothing I can do about it.
+	//This equals function collapses whitespace to one character, which makes IE happy. 
+	var equals_ws = function (actual, expected, msg)
+	{
+		expected = expected.replace(/[\s]+/g, " ");
+		actual = actual.replace(/[\s]+/g, " ");
+		equals(jQuery.trim(expected), jQuery.trim(actual), msg);
+	}
+	var htmlFinder = function (elem, q, pos)
+	{
+		return jQuery(elem.find(q).get(pos)).html();
+	}
+	var textNodesAsStrs = function (jq)
+	{
+		var arr = [];
+		jq.each(function (i, node)
+		{
+			jQuery.each(node.childNodes, function (i, n)
+			{
+				arr.push(n.data);
+			})
+		})
+		return arr;		
+	};
+	var testWidgetSuccessFail = function (widgetId, msg)
+	{
+		var jq = jQuery('#'+widgetId);
+		CF.widget.start(jq);
+		var result = jQuery('#'+widgetId);
+		var res = result.html();
+		ok(res.indexOf("FAIL") == -1 && res.indexOf("SUCCESS") != -1, msg || "rendered with no fail message");
+		return result;
+	};
+	
+	module("Nesting Widgets")
+	expect(8);
+	
+	test("test simple nesting widgets", function (){
+		var jq = jQuery('#testNestedWidgets1');
+		CF.widget.start(jq);
+		var result = jQuery('#testNestedWidgets1');
+		equals(3, result.children().length);
+		equals_ws(htmlFinder(result, ".cf_widget", 0), "I am widget 1");
+		equals_ws(htmlFinder(result, ".cf_widget", 1), "I am widget 2");
+		equals_ws(htmlFinder(result, ".cf_widget", 2), "I am widget 3");	
+	});
+
+	test("test double nested widgets with default template", function (){
+		var jq = jQuery('#testNestedWidgets2');
+		CF.widget.start(jq);
+		var result = jQuery('#testNestedWidgets2');
+		equals(1, result.children().length);
+		equals_ws(textNodesAsStrs(result)[0], "Level 1");
+		equals_ws(textNodesAsStrs(result.find(".cf_widget"))[0], "Level 2");
+		equals_ws(textNodesAsStrs(result.find(".cf_widget .cf_widget"))[0], "This is my default template body");
+	});
+
+	test("test double nested widgets with default template", function (){
+	
+	});
+
+	module("For Loop Tag")
+
+	test("Simple for loop on global object", function (){
+		expect(forData1.length + 1);
+		var jq = jQuery('#testForLoop1');
+		CF.widget.start(jq);
+		var result = jQuery('#testForLoop1');
+		var items = result.find(".cf_item");
+		equals(items.length, forData1.length);
+		items.each (function (i, item)
+		{
+			equals_ws(jQuery(item).html(), "This is "+i+".  It's a wild group of "+forData1[i]+".");
+		})
+	});
+	test("Simple for loop on global object with rendertag=false", function (){
+		expect(2);
+		var jq = jQuery('#testForLoop2');
+		CF.widget.start(jq);
+		var result = jQuery('#testForLoop2');
+		equals(result.children().length, 0); //text nodes only.
+		var eqStr = "";
+		jQuery.each(forData1, function (i, item)
+		{
+			eqStr += "This is "+i+".  It's a wild group of "+forData1[i]+". ";
+		})
+		equals_ws(result.html(), eqStr); 
+	});
+	test("Nested for loop on two global objects", function (){
+		expect(forData1.length + (forData2.length * forData1.length));
+		var jq = jQuery('#testForLoop3');
+		CF.widget.start(jq);
+		var result = jQuery('#testForLoop3');
+		var items = result.find("li:not(li li)");
+		items.each(function (i, item)
+		{
+			item = jQuery(item);
+			
+			equals_ws(textNodesAsStrs(item)[0], "The "+forData1[i]+" ate all of the");
+			nested = item.find("li");
+			nested.each(function (j, n)
+			{
+				equals_ws(jQuery(n).html(), forData2[j]);
+			})
+		}) 
+	});
+	test("Nested for loop on two global objects that uses ids inside for loop", function (){
+		expect(forData1.length + (forData2.length * 2 * forData1.length));
+		var jq = jQuery('#testForLoop4');
+		CF.widget.start(jq);
+
+		var result = jQuery('#testForLoop4');
+		var items = result.find("li:not(li li)");
+		items.each(function (i, item)
+		{
+			item = jQuery(item);
+			
+			equals_ws(textNodesAsStrs(item)[0], "The "+forData1[i]+" ate all of the");
+			nested = item.find("li");
+			var lastId = null;
+			nested.each(function (j, n)
+			{
+				var span=jQuery(n).find("span");
+				var id = span.attr("id");
+				ok(lastId != id, "id was incremented");
+				lastId = id;
+				equals_ws(span.html(), forData2[j]);
+			});
+		}) 
+	});
+	test("Nested for loop using parent data lookup", function (){
+		expect(forData1.length * forData2.length);
+		var jq = jQuery('#testForLoop5');
+		CF.widget.start(jq);
+
+		var result = jQuery('#testForLoop5');
+		var items = result.find("li li");
+		var k=0;
+		for (var i=0; i< forData1.length ; i++)
+		{
+			for(var j=0; j < forData2.length ; j++)
+			{
+				equals_ws(jQuery(items.get(k)).html(), forData2[j] + " vs " + forData1[i]);
+				k++;
+			}
+		}
+	});
+	test("A nested for loop with a widget inside, showing data passthrough from loops to widgets",  function (){
+		expect(forData1.length + (forData2.length * 2 * forData1.length));
+		var jq = jQuery('#testForLoop6');
+		CF.widget.start(jq);
+
+		var result = jQuery('#testForLoop6');
+		var items = result.find("li:not(li li)");
+		items.each(function (i, item)
+		{
+			item = jQuery(item);
+			
+			equals_ws(textNodesAsStrs(item)[0], "The "+forData1[i]+" ate all of the");
+			nested = item.find("li");
+			var lastId = null;
+			nested.each(function (j, n)
+			{
+				var widg=jQuery(n).find(".cf_widget");
+				var id = widg.attr("id");
+				ok(lastId != id, "widgets have unique id");
+				lastId = id;
+				equals_ws(widg.html(), forData2[j]);
+			});
+		}) 
+	});		
+	test("Nested for loops off of a complex JSON object, using double parent data lookup",function (){
+		expect(8);
+		var jq = jQuery('#testForLoop7');
+		CF.widget.start(jq);
+	
+		var result = jQuery('#testForLoop7');
+	
+		var lastPart = result.find(".cf_item .cf_item .cf_item");
+		var tns= textNodesAsStrs(lastPart);
+		equals_ws(tns[0], "larry feels happy at birthdays");
+		equals_ws(tns[1], "larry feels happy at weekends");
+		equals_ws(tns[2], "larry feels angry at traffic jams");
+		equals_ws(tns[3], "larry feels angry at bar fights");
+	
+		equals_ws(tns[4], "frank feels sad at funerals");
+		equals_ws(tns[5], "frank feels sad at goodbyes");
+		equals_ws(tns[6], "frank feels tired at working late");
+		equals_ws(tns[7], "frank feels tired at running marathons");
+		});
+
+	module("Choice Tag evaluation tests");
+
+	test("Test of eq_s string comparison case sensitivity", function ()
+	{
+		expect(1);
+		testWidgetSuccessFail("testChoice1", "eq_s is case sensitive");
+	})
+
+	test("Test of eq_s with cf_otherwise fallthough tag", function (){
+		expect(1);
+		testWidgetSuccessFail("testChoice2", "cf_otherwise is used when no match found");
+	}) 
+	test("Test of lt and gt where lt is true", function (){
+		expect(1);
+		testWidgetSuccessFail("testChoice3", "5 is lt 6 and not gt 8");
+	})
+	test("Test of lt gt and eq where gt is true", function (){
+		expect(1);
+		testWidgetSuccessFail("testChoice4", "5 is not eq to 10, not lt 1 and gt 2");
+	})
+	test("Test of lt gt and eq where eq is true", function (){
+		expect(1);
+		testWidgetSuccessFail("testChoice5", "5 is not lt 1, not gt 6 and eq 5");
+	})
+	test("Test of lt and eq applied to same elem", function (){
+		expect(1);
+		testWidgetSuccessFail("testChoice6", "5 is not lt 5, and is eq 5");
+	})
+	test("Test of lt and eq applied to same elem, test success on first match", function (){
+		expect(1);
+		testWidgetSuccessFail("testChoice7", "4 is not eq_s to \"4\" and is lt or eq 4, and choice evaluation stops on first matched choice.");
+	})
+	test("Test of lt and eq applied to same elem and fallthrough to otherwise", function (){
+		expect(1);
+		testWidgetSuccessFail("testChoice8", "6 is not lt or eq to 5");
+	})	
+	module("If tag tests")
+	test("Test of if on a non-null list", function (){
+		expect(2);
+		var result = testWidgetSuccessFail("testIf1", "if evaluates true on existing object");
+		equals(result.children().length, 0, "If node was not rendered but if node body was");
+	})	
+	test("Test of if on a non-null list, unrendered else, and rendertag=true", function (){
+		expect(3);
+		var result = testWidgetSuccessFail("testIf2", "if evaluates true on existing object, cf_else is not rendered if cf_if evals true");
+		equals(result.children().length, 1, "If node was rendered");
+		equals(result.find(".cf_if").length, 1, "If node retained classname");
+	})		
+	test("Test of if not operator on non-null list, cf_else is rendered", function (){
+		expect(2);
+		var result = testWidgetSuccessFail("testIf3", "if evaluates true on existing object, cf_else is not rendered if cf_if evals true");
+		equals(result.children().length, 0, "If node not rendered, cf_else not rendered but body was");
+	})		
+	test("Test of if not operator on non-null list, cf_else is rendered, cf_else is not last elem in template", function (){
+		expect(2);
+		var result = testWidgetSuccessFail("testIf4", "not operation on true statement triggers else");
+		equals(result.children().length, 0, "If node not rendered, cf_else not rendered but body was");
+	})		
+	test("Test of if not operator on non-null list, nested cf_if is not rendered cf_else is rendered", function (){
+		expect(2);
+		var result = testWidgetSuccessFail("testIf5", "not operation on true statement triggers else, nested if is not triggered");
+		equals(result.children().length, 0, "If node not rendered, cf_else not rendered but body was");
+	})		
+	test("Test undefined binding", function (){
+		expect(1);
+		var jq = jQuery('#testIf6');
+		CF.widget.start(jq);
+		var result = jQuery('#testIf6');
+		equals_ws(result.html(), "", "undefined evaluates to false, nothing is rendered");
+	})
+	test("Test assign=true attribute changes value of data variable", function (){
+		expect(1);
+		var jq = jQuery('#testIf7');
+		CF.widget.start(jq);
+		var result = jQuery('#testIf7');
+		equals_ws(jQuery(result.find("div")).html(), "2: this should say \"frank\": frank", "data parameter value is changed by assign statement");
+	})
+	test("Test very invalid binding statement evaluates as false", function (){
+		expect(2);
+		var result = testWidgetSuccessFail("testIf8", "else was called even when binding statement is invalid javascript that throws exception");
+		equals(result.children().length, 0, "If node not rendered, cf_else not rendered but body was");
+	})		
+	test("Test of nested if statements with assign true", function (){
+		expect(2);
+		var result = testWidgetSuccessFail("testIf9", "assign = true modifies the value of the data parameter only inside that tag node");
+		equals(result.children().length, 0, "");
+	})
+	test("Test of subwidget reload rendering", function (){
+		expect(4);
+		CF.widget.start("#testSubwidgetReload");
+		ok(jQuery("#testSubwidgetReload").html().indexOf("SUCCESS") != -1);
+		ok(jQuery("#testSubwidgetReload").html().indexOf("FAIL") == -1);
+		CF.widget.registry.getId("testSubwidgetReload").widget.reload();
+		ok(jQuery("#testSubwidgetReload").html().indexOf("SUCCESS") != -1);
+		ok(jQuery("#testSubwidgetReload").html().indexOf("FAIL") == -1);
+	});
+	
+	
+ });
+  </script>
+	
+  
+  
+</head>
+<body>
+  
+ <h1>Template Engine Tests</h1>
+ <h2 id="banner"></h2>
+ <h2 id="userAgent"></h2>
+
+ <ol id="tests"></ol>
+
+ <div id="main"></div>
+ 
+ <div class='testArea'>
+ 
+	<div id='testNestedWidgets1' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget" data="myvar">
+		<div class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget" data="myvar">
+			I am widget 1
+		</div>
+		<div class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget" data="myvar">
+			I am widget 2
+		</div>
+		<div class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget" data="myvar">
+			I am widget 3
+		</div>
+	</div>
+	
+	<div id='testNestedWidgets2' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget" data="myvar">
+	 	Level 1
+		<div class="cf_widgetLoader" widgetType="CF.widget.TestWidgetDefaultTemplate">
+			Level 2
+			<div class="cf_widgetLoader" widgetType="CF.widget.TestWidgetDefaultTemplate"></div>
+		</div>
+	</div>
+	
+	<div id='testForLoop1' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_for" binding="forData1">
+			<div class="cf_item">This is [% index %].  It's a wild group of [% item %]. </div>
+		</div>
+	</div>
+	
+	<div id='testForLoop2' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_for" rendertag="false" binding="forData1">
+			<div class="cf_item" rendertag="false">This is [% index %].  It's a wild group of [% item %]. </div>
+		</div>
+	</div>
+	
+	<div id='testForLoop3' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<ul class="cf_for" binding="forData1">
+			<li class="cf_item">
+				The [% item %] ate all of the
+				<ol class="cf_for" binding="forData2">
+					<li class="cf_item">[% item %]</li>
+				</ol>
+			</li>
+		</ul>
+	</div>
+
+	<div id='testForLoop4' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<ul class="cf_for" binding="forData1">
+			<li id='foritem' class="cf_item">
+				The [% item %] ate all of the
+				<ol class="cf_for" binding="forData2">
+					<li class="cf_item"> <span id="fooitem"> [% item %]</span> </li>
+				</ol>
+			</li>
+		</ul>
+	</div>
+
+	<div id='testForLoop5' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<ul class="cf_for" binding="forData1">
+			<li class="cf_item">
+				<ol class="cf_for" binding="forData2">
+					<li class="cf_item">[% item %] vs [% parent.item %]</li>
+				</ol>
+			</li>
+		</ul>
+	</div>
+
+	<div id='testForLoop6' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<ul class="cf_for" binding="forData1">
+			<li class="cf_item">
+				The [% item %] ate all of the
+				<ol class="cf_for" binding="forData2">
+					<li class="cf_item">
+						<div class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+							[% item %] 
+						</div>
+					</li>
+				</ol>
+			</li>
+		</ul>
+	</div>
+
+	<div id='testForLoop7' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<ul class="cf_for" binding="complexList">
+			<li class="cf_item">
+				<em>[% item.name %] </em>
+				<ul class="cf_for" binding="item.feelings">
+					<li class="cf_item">
+						[% item.emotion %] 
+						<ol class="cf_for" binding="item.events">
+							<li class="cf_item" id="foo">
+								[% parent.parent.item.name %] feels [% parent.item.emotion %] at [% item %] 
+							</li>
+						</ol>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div> 
+	
+	
+
+	<div id='testChoice1' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_choice" binding="'cool'.toUpperCase()">
+			<div class="cf_condition" eq_s="cool">
+				FAIL
+			</div>
+			<div class="cf_condition" eq_s="COOL">
+				SUCCESS
+			</div>
+		</div>
+	</div>
+	
+	<div id='testChoice2' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_choice" binding="'cool'">
+			<div class="cf_condition" eq_s="awesome">
+				FAIL
+			</div>
+			<div class="cf_condition" eq_s="sweet">
+				FAIL
+			</div>
+			<div class="cf_otherwise">
+				SUCCESS
+			</div>
+		</div>
+	</div>
+
+	<div id='testChoice3' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_choice" binding="numericValue">
+			<div class="cf_condition" gt="8">
+				FAIL
+			</div>
+			<div class="cf_condition" lt="6">
+				SUCCESS
+			</div>
+		</div>
+	</div>
+	
+	<div id='testChoice4' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_choice" binding="numericValue">
+			<div class="cf_condition" eq="10">
+				FAIL
+			</div>
+			<div class="cf_condition" lt="1">
+				FAIL
+			</div>
+			<div class="cf_condition" gt="2">
+				SUCCESS
+			</div>
+		</div>
+	</div>	
+	
+	<div id='testChoice5' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_choice" binding="numericValue">
+			<div class="cf_condition" lt="1">
+				FAIL
+			</div>
+			<div class="cf_condition" gt="6">
+				FAIL
+			</div>
+			<div class="cf_condition" eq="5">
+			 	SUCCESS
+			</div>
+		</div>
+	</div>
+	
+	<div id='testChoice6' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_choice" binding="numericValue">
+			<div class="cf_condition" lt="5" eq="5">
+				SUCCESS
+			</div>
+		</div>
+	</div>
+	
+	<div id='testChoice7' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_choice" binding="4">
+			<div class="cf_condition" eq_s="4">
+				FAIL
+			</div>
+			<div class="cf_condition" lt="5" eq="5">
+				SUCCESS
+			</div>
+			<div class="cf_condition" eq="4">
+				FAIL
+			</div>
+		</div>
+	</div>	
+	<div id='testChoice8' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_choice" binding="6">
+			<div class="cf_condition" lt="5" eq="5">
+				FAIL
+			</div>
+			<div class="cf_otherwise">
+				SUCCESS
+			</div>
+		</div>
+	</div>	
+	
+	<div id='testIf1' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_if" binding="complexList">
+			SUCCESS
+		</div>
+	</div>
+	<div id='testIf2' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_if" binding="complexList" rendertag="true">
+			SUCCESS
+			<div class='cf_else'>
+				FAIL
+			</div>
+		</div>
+	</div>
+	<div id='testIf3' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_if" binding="!complexList">
+			FAIL
+			<div class="cf_else">
+				SUCCESS 
+			</div>
+		</div>	
+	</div>
+	<div id='testIf4' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_if" binding="!complexList">
+			FAIL
+			<div class="cf_else">
+				SUCCESS 
+			</div>
+			FAIL
+		</div>	
+	</div>
+	<div id='testIf5' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_if" binding="!complexList">
+			<div class="cf_if" binding="complexList[1].name">
+				<div class="cf_else">
+					FAIL
+				</div>
+				FAIL
+			</div>
+			<div class="cf_else">
+				SUCCESS
+			</div>
+		</div>
+	</div>
+	<div id='testIf6' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_if" binding="barf">
+			FAIL
+		</div>		
+	</div>
+	<div id='testIf7' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_if" binding="complexList[1].name" assign="true" >
+			<div>2: this should say "frank": [% data %]</div> 
+		</div>
+	</div>
+	<div id='testIf8' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_if" binding="complexList[5].foo.crap.junk[-1]">
+			FAIL
+			<div class='cf_else'>
+				SUCCESS
+			</div>
+		</div>		
+	</div>
+	<div id='testIf9' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class="cf_if" binding="complexList[0]" assign="true">
+			<span class="cf_if" binding="data.name" assign="true">
+				[% data == "larry" ? "SUCCESS" : "FAIL" %] 
+			</span>
+			<span class="cf_if" binding="data.name">
+				[% data.name  == "larry" ? "SUCCESS" : "FAIL" %] 
+			</span>
+		</div>	
+	</div>
+	<div id='testSubwidgetReload' class="cf_widgetLoader" widgetType="CF.widget.SimpleWidget">
+		<div class='cf_widgetLoader' class='CF.widget.SimpleWidget'>SUCCESS [% false ? "FAIL" : "" %]</div>
+	</div>
+ </div>
+ 
+ 
+</body>
+</html>

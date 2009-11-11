@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<project default="build">
+
+	<property name="version" value="1.0"/>
+	<property name="yui-compressor.jar"  location="lib/yuicompressor-2.4.2.jar" />
+	<property name="yui-compressor-ant-task.jar" location="lib/yui-compressor-ant-task-0.4.jar" />
+
+	<path id="task.classpath">
+	  <pathelement location="${basedir}/lib/yuicompressor-2.4.2.jar" />
+	  <pathelement location="${basedir}/lib/rhino-1.6R7.jar" />
+	  <pathelement location="${basedir}/lib/jargs-1.0.jar" />
+	  <pathelement location="${basedir}/lib/jscompiler.jar"/>
+	</path>
+	
+	<taskdef name="jscompiler" classpathref="task.classpath" classname="com.crowdfactory.js.JSCompiler"/>
+	<taskdef name='yui-compress' classpathref="task.classpath" classname="com.crowdfactory.js.YUICompress"/>
+
+	<property name="srcDir" value="${basedir}/src"></property>
+	<property name='buildDir' value="${basedir}/build/js/" />
+	<property name="coreSrcDir" value="${srcDir}/core"/>
+	<property name="transportSrcDir" value="${srcDir}/transport"/>
+	<property name="supportSrcDir" value="${srcDir}/support"/>
+	<property name="widgetSrcDir" value="${srcDir}/widget"/>
+
+	
+	<target name='buildFolders'>
+		<mkdir dir="${basedir}/build"/>
+		<mkdir dir="${buildDir}"/>
+	</target>
+	
+	<target name='clean'>
+		<delete dir="${buildDir}" />
+		<antcall target="buildFolders"></antcall>
+	</target>
+	
+	<target name="version">
+	  <propertyfile file="version.properties" comment="Build version info">
+		    <entry key="buildDate" type="date" value="now"/>
+		    <entry key="buildNum" default="0" type="int" operation="+" value="1"/>
+	  </propertyfile>
+	  <replace
+	        file="${buildDir}/CF_full.js"
+	        value="value not found in version.properties"
+	        propertyFile="version.properties">
+	        <replacefilter token="@CF.buildDate@" property="buildDate"/>
+	        <replacefilter token="@CF.buildNum@" property="buildNum"/>
+	  		<replacefilter token="@CF.version@" property="version"/>
+	    </replace>
+		<replace
+	        file="${buildDir}/CF_transport.js"
+	        value="value not found in version.properties"
+	        propertyFile="version.properties">
+	        <replacefilter token="@CF.buildDate@" property="buildDate"/>
+	        <replacefilter token="@CF.buildNum@" property="buildNum"/>
+	  		<replacefilter token="@CF.version@" property="version"/>
+	    </replace>
+	</target>
+
+	<target name="compile" depends='clean'>
+		<jscompiler src="${coreSrcDir};${transportSrcDir};${supportSrcDir};${widgetSrcDir}"
+			dest="${buildDir}/CF_full.js"/>
+		<jscompiler src="${coreSrcDir};${transportSrcDir}"
+		   dest="${buildDir}/CF_transport.js"/>
+		<antcall target="version"/>
+	</target>
+	
+	<target name="compress">
+		<yui-compress src="${buildDir}/CF_full.js" linebreak="1000" dest="${buildDir}/CF_full_min.js" /> 
+		<yui-compress src="${buildDir}/CF_transport.js" linebreak="1000" dest="${buildDir}/CF_transport_min.js" />
+		
+		<gzip src="${basedir}/build/js/CF_full_min.js" destfile="${basedir}/build/js/CF_full_min.js.gz" />
+		<gzip src="${basedir}/build/js/CF_transport_min.js" destfile="${basedir}/build/js/CF_transport_min.js.gz" />
+	</target>
+	
+	<target name="build" depends="compile,compress">
+	</target>
+	
+</project>
