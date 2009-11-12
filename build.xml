@@ -1,9 +1,6 @@
 <?xml version="1.0"?>
 <project default="build">
-
-	<property name="version" value="1.0"/>
 	<property name="yui-compressor.jar"  location="lib/yuicompressor-2.4.2.jar" />
-	<property name="yui-compressor-ant-task.jar" location="lib/yui-compressor-ant-task-0.4.jar" />
 
 	<path id="task.classpath">
 	  <pathelement location="${basedir}/lib/yuicompressor-2.4.2.jar" />
