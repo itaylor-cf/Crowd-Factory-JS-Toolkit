@@ -1,0 +1,61 @@
+<html>
+	<head>
+		<title>CrowdFactory Cross Domain Ajax Proxy Window</title>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+		<script type="text/javascript" src="CF_transport_min.js"></script>
+	</head>	
+	<body>
+		<script type="text/javascript">
+			var p = CF.url.params();
+			if (p.safariFix)
+			{
+				CF.log("Applying SafariFix");
+				CF.ajax.formPost(p.safariFix, {redirect:CF.url.removeParam("safariFix", location.href)});
+			}
+			else if(CF.ajax.checkPostMessage())
+			{
+				var receiveMessage= function(msg)
+				{
+					if(msg.type != "message")
+						return;
+					msg = msg.originalEvent;
+					if (!msg)
+						return;
+					var data = CF.evalFx(msg.data);
+					if(!data)
+						return;
+					var source = msg.source;
+					var doneFx= function(result)
+					{
+						source.postMessage(CF.toJSON({
+							seq: data.seq,
+							data: result
+						}), "*");
+					}
+					CF.ajax.ajax(data.url, data.params, doneFx);
+				}
+				jQuery(window).bind("message", receiveMessage);
+				window.parent.postMessage("ready", "*");
+			}
+			else if(p.ready){
+				window.name = "ready";
+			}
+			else if(p.request)
+			{
+				var n = window.name;
+				var msg = n.replace("request:", "");
+				var data = CF.evalFx(msg);
+				var doneFx = function (result)
+				{
+					window.name = "response:"+CF.toJSON({
+						seq:data.seq,
+						data: result
+					});
+					location.href=data.returnUrl;
+				}
+				if(data)
+					CF.ajax.ajax(data.url, data.params, doneFx);
+			}
+		</script>
+	</body>
+</html>

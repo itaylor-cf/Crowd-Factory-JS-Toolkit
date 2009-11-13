@@ -13,7 +13,9 @@
 	<taskdef name='yui-compress' classpathref="task.classpath" classname="com.crowdfactory.js.YUICompress"/>
 
 	<property name="srcDir" value="${basedir}/src"></property>
-	<property name='buildDir' value="${basedir}/build/js/" />
+	<property name='buildDir' value="${basedir}/build" />
+	<property name='jsDir' value="${buildDir}/js" />
+	<property name="xdDir" value="${buildDir}/xd" />
 	<property name="coreSrcDir" value="${srcDir}/core"/>
 	<property name="transportSrcDir" value="${srcDir}/transport"/>
 	<property name="supportSrcDir" value="${srcDir}/support"/>
@@ -21,8 +23,9 @@
 
 	
 	<target name='buildFolders'>
-		<mkdir dir="${basedir}/build"/>
 		<mkdir dir="${buildDir}"/>
+		<mkdir dir="${jsDir}"/>
+		<mkdir dir="${xdDir}"/>
 	</target>
 	
 	<target name='clean'>
@@ -36,7 +39,7 @@
 		    <entry key="buildNum" default="0" type="int" operation="+" value="1"/>
 	  </propertyfile>
 	  <replace
-	        file="${buildDir}/CF_full.js"
+	        file="${jsDir}/CF_full.js"
 	        value="value not found in version.properties"
 	        propertyFile="version.properties">
 	        <replacefilter token="@CF.buildDate@" property="buildDate"/>
@@ -44,7 +47,7 @@
 	  		<replacefilter token="@CF.version@" property="version"/>
 	    </replace>
 		<replace
-	        file="${buildDir}/CF_transport.js"
+	        file="${jsDir}/CF_transport.js"
 	        value="value not found in version.properties"
 	        propertyFile="version.properties">
 	        <replacefilter token="@CF.buildDate@" property="buildDate"/>
@@ -55,21 +58,35 @@
 
 	<target name="compile" depends='clean'>
 		<jscompiler src="${coreSrcDir};${transportSrcDir};${supportSrcDir};${widgetSrcDir}"
-			dest="${buildDir}/CF_full.js"/>
+			dest="${jsDir}/CF_full.js"/>
 		<jscompiler src="${coreSrcDir};${transportSrcDir}"
-		   dest="${buildDir}/CF_transport.js"/>
+		   dest="${jsDir}/CF_transport.js"/>
 		<antcall target="version"/>
 	</target>
 	
 	<target name="compress">
-		<yui-compress src="${buildDir}/CF_full.js" linebreak="1000" dest="${buildDir}/CF_full_min.js" /> 
-		<yui-compress src="${buildDir}/CF_transport.js" linebreak="1000" dest="${buildDir}/CF_transport_min.js" />
+		<yui-compress src="${jsDir}/CF_full.js" linebreak="1000" dest="${jsDir}/CF_full_min.js" /> 
+		<yui-compress src="${jsDir}/CF_transport.js" linebreak="1000" dest="${jsDir}/CF_transport_min.js" />
 		
 		<gzip src="${basedir}/build/js/CF_full_min.js" destfile="${basedir}/build/js/CF_full_min.js.gz" />
 		<gzip src="${basedir}/build/js/CF_transport_min.js" destfile="${basedir}/build/js/CF_transport_min.js.gz" />
 	</target>
 	
-	<target name="build" depends="compile,compress">
+	<target name="makexd">
+		<property file="version.properties"></property>
+		<mkdir dir="${xdDir}/${version}/"/>
+		<copy todir="${xdDir}/${version}/">
+			<fileset dir="${transportSrcDir}">
+				<include name="xd_host.html"/>
+			</fileset>
+			<fileset dir="${jsDir}">
+				<include name="CF_transport_min.js"/>
+ 				<include name="CF_transport.js" />
+			</fileset>			
+		</copy>
+	</target>
+	
+	<target name="build" depends="compile,compress,makexd">
 	</target>
 	
 </project>

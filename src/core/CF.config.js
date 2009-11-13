@@ -24,8 +24,8 @@ CF.config = function (){
 		sessionCookieName:"CF_JSESSIONID",
 		loginProviderParam : "cf_provider",
 		loginTokenNameParam : "cf_token_name",
-		xd_path : "/xd/xd_host.html",
-		xdr_loc : location.protocol + "//" + location.host + "/xd/xd_host.html",
+		xd_path : "/xd/"+CF.version+"/xd_host.html",
+		xdr_loc : location.protocol + "//" + location.host + "/xd/"+CF.version+"/xd_host.html",
 		use_xdr : false,
 		extraRestParams : {}
 		};
