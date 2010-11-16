@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<project default="build">
+	<property name="yui-compressor.jar"  location="lib/yuicompressor-2.4.2.jar" />
+	<tstamp>
+		<format property="now" pattern="MM/dd/yyyy hh:mm aa" />
+	</tstamp>
+	<property name="buildDate" value="${now}"></property>
+	<property name="buildNum" value="dev"></property>
+ 
+ 	<target name='buildFolders'>
+ 		<mkdir dir="build"/>
+		<mkdir dir="build/${buildNum}"/>
+	</target>
+	
+	<target name='clean'>
+		<delete dir="build" />
+		<antcall target="buildFolders"></antcall>
+	</target>
+	
+	<target name='build' depends='clean'>
+		<copy toDir='build/${buildNum}'>
+			<fileset dir='.'>
+				<exclude name='**/build/**'/>
+				<exclude name='**/build'/>
+				<exclude name='**/build.xml'/>
+			</fileset>
+		</copy>
+		<war destfile="build/ultra.war" needxmlfile="false">
+			<fileset dir="build">
+				<exclude name="**/*.zip"/>
+				<exclude name="**/*.war"/>
+			</fileset>
+		</war>
+		<zip destfile="build/ultra-${buildNum}.zip/">
+			<fileset dir="build">
+				<exclude name="**/*.zip"/>
+				<exclude name="**/*.war"/>
+			</fileset>
+		</zip>
+	</target>
+	
+	<target name="wardeploy" depends='build'>
+		<copy todir="/usr/local/jboss-4.0.5/server/default/deploy" failonerror="true" overwrite="true">
+			<fileset dir="build">
+				<include name="ultra.war"/>
+			</fileset>
+		</copy>
+	</target>
+	
+</project>
