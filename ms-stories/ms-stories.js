@@ -24,6 +24,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 		opts.entityId += "-story";
 	}
 	that = CF.widget.Pageable({}, that);
+	that.defaultMsg = "Tell us briefly how Excel tables make life simpler for you...";
 	
 	that.onReload = function()
 	{
@@ -32,7 +33,6 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	
 	that.getDefaultTemplateBody = function ()
 	{
-		that.defaultMsg = "Tell us briefly how Excel tables make life simpler for you...";
 		return "\
 		<div class='cf_stories'>\
 				<div class='cf_commentheader cf_ms_arrow'>How others are using tables</div> \
@@ -73,7 +73,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 							<span class='cf_char_count'></span> letters remaining\
 							<a class='cf_why_limit' style='display:none;'>why?</a>\
 						</div>\
-						<textarea class='cf_replybox' rows='' cols='' onfocus=\"if(this.value==this.defaultValue) {this.value='';}\" onblur=\"if(this.value=='') {this.value='"+that.defaultMsg+"';}\">"+that.defaultMsg+"</textarea>\
+						<textarea class='cf_replybox'></textarea>\
 						<label class='cf_sharebox_lbl'><input type='checkbox' class='cf_sharecbx'/>Share this comment</label>\
 						<div class='cf_errormsg'></div>\
 					</div>\
@@ -129,12 +129,12 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 		
 		that.postBtn =  elem.find(".cf_btnPostComment").click(that.postComment);
 
-		that.replyBox = elem.find(".cf_replybox");
+		that.replyBox = elem.find(".cf_replybox").focus(that.replyBoxFocus).blur(that.replyBoxBlur);
+		that.replyBox.val(that.defaultMsg);
 		that.charMax = 10000;
 		that.replyBox.keydown(that.countChars);
 		that.charHolder = elem.find(".cf_char_holder");
 		that.charCount = elem.find(".cf_char_count");
-/* 		that.loginArea = elem.find(".cf_loginArea"); */
 
 		var noShare = CF.coerce(CF.cookie.readCookie("CF_commentNoShare"), "bool", false);
 		that.shareCbx = elem.find(".cf_sharecbx").attr('checked',!noShare);
@@ -144,7 +144,16 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 			that.whyLimitElem = elem.find(".cf_why_limit").show().click(that.showWhyLimit);
 		}
 	};
-	
+	that.replyBoxFocus = function () {
+		if(that.replyBox.val()==that.defaultMsg) {
+			that.replyBox.val('');
+		}
+	}
+	that.replyBoxBlur = function () {
+		if(that.replyBox.val()=='') {
+			that.replyBox.val(that.defaultMsg);
+		}
+	}
 	that.entityFetched = function (entity)
 	{
 		if(!entity)
