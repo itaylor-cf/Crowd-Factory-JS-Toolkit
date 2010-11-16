@@ -8,7 +8,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 {
 	opts = opts || {};
 	opts.depth = CF.coerce(opts.depth, "int", 0);
-	opts.avatars = CF.coerce(opts.avatars, "bool", true);
+	opts.avatars = CF.coerce(opts.avatars, "bool", false);
 	opts.socialIcons = CF.coerce(opts.socialIcons, "array", []);
 	opts.deleteComments = CF.coerce(opts.deleteComments, "bool", false);
 	opts.actionRequiredMsg = "Please post a comment to continue";
@@ -32,11 +32,10 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	
 	that.getDefaultTemplateBody = function ()
 	{
+		that.defaultMsg = "Tell us briefly how Excel tables make life simpler for you...";
 		return "\
 		<div class='cf_stories'>\
-			<div class='[% opts.avatars? \"cf_hasavatars\" : \"\"%]'>\
-				<div class='cf_commentheader cf_arrow'>How others are using tables</span>\
-				</div> \
+				<div class='cf_commentheader cf_arrow'>How others are using tables</div> \
 				<div class='cf_commentList'>\
 				<div class='cf_for' binding='comments'>\
 					<div class='cf_item cf_comment [% (index == length -1) ? \"cf_last\" : \"\" %] cf_comment_depth0'> \
@@ -65,11 +64,6 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 					</div>\
 				</div>\
 				<div class='cf_replyarea'>\
-				<div class='cf_if' binding='currentUser && opts.avatars'>\
-					<div class='cf_avatar_container'>\
-						<img class='cf_avatar' cf_src='[% currentUser.profile_photo_url || defaultAvatar %]'/>\
-					</div>\
-				</div>\
 				<div class='cf_reply_container'>\
 					<div class='cf_replyprompt cf_commentheader'>\
 						Tell your Story\
@@ -79,7 +73,8 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 							<span class='cf_char_count'></span> letters remaining\
 							<a class='cf_why_limit' style='display:none;'>why?</a>\
 						</div>\
-						<textarea class='cf_replybox' rows='' cols='' onfocus=\"if(this.value==this.defaultValue) {this.value='';}\" onblur=\"if(this.value=='') {this.value='Tell us briefly how Excel tables make life simpler for you...';}\">Tell us briefly how Excel tables make life simpler for you...</textarea>\
+						<textarea class='cf_replybox' rows='' cols='' onfocus=\"if(this.value==this.defaultValue) {this.value='';}\" onblur=\"if(this.value=='') {this.value='"+that.defaultMsg+"';}\">"+that.defaultMsg+"</textarea>\
+						<label class='cf_sharebox_lbl'><input type='checkbox' class='cf_sharecbx'/>Share this comment</label>\
 						<div class='cf_errormsg'></div>\
 					</div>\
 					<div class='cf_btnrow'>\
@@ -87,7 +82,6 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 						<div class='cf_loginArea'></div>\
 					</div>\
 				</div>\
-			</div>\
 			</div>\
 		</div>\
 		";		
@@ -144,7 +138,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 		that.loginArea = elem.find(".cf_loginArea");
 
 		var noShare = CF.coerce(CF.cookie.readCookie("CF_commentNoShare"), "bool", false);
-		that.shareCbx = "false";
+		that.shareCbx = elem.find(".cf_sharecbx").attr('checked',!noShare);
 		if(that.isSuckyBrowser())
 		{
 			that.charMax = 500;
@@ -195,19 +189,32 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	that.postComment = function (){
 		that.val = cf_jq.trim(that.replyBox.val());
 		that.errMsg.html("");
-		if(!that.val || !that.val.length){
-			var e = CF.build("div", "Blank comments are not allowed");
+		CF.log("that.val: " + that.val);
+		if(!that.val || !that.val.length || that.val==that.defaultMsg){
+			var e = CF.build("div", "Please enter your own comment.");
 			that.errMsg.append(e);
 			setTimeout(function (){
 				e.fadeOut();
 			}, 5000);
 
 		} else{
+			
+			var shareChecked = that.shareCbx.attr('checked');
+			CF.cookie.createCookie("CF_commentNoShare", (!shareChecked).toString());
+			that.events.fire("commentform_newcomment", that.val, that.loginArea, shareChecked, null, that.postBtn, that.socialIconsElem);
+			
+			
+			
 			var shareChecked = that.shareCbx;
 			CF.cookie.createCookie("CF_commentNoShare", (!shareChecked).toString());
 			var o = CF.extend({}, opts);
 			//o.skipSyndication = !share;
 			o.skipSyndication = !shareChecked;
+			CF.log("o.skipSyndication: " + o.skipSyndication);
+			if (o.skipSyndication) {
+				o.postConfirmMessage = "Thank you for submitting your Excel story!";
+			}
+			
 			that.insightMgr.doLoginFlow(that.elem, that.postBtn, null, opts.widgetName,
 					CF.curry(that.beforeAction, that.doPostComment), 
 					that.performSyndication, o);
@@ -283,7 +290,7 @@ CF.widget.InsightStory = function (targetElem, template, templateEngine, data, o
 {
 	opts = opts || {};
 	opts.depth = CF.coerce(opts.depth, "int", 0);
-	opts.avatars = CF.coerce(opts.avatars, "bool", true);
+	opts.avatars = CF.coerce(opts.avatars, "bool", false);
 	opts.showReply = CF.coerce(opts.showReply, "bool", false);
 	var that = CF.widget.SimpleWidget(targetElem, template, templateEngine, data, opts);
 	that.textCollapsed = true;
@@ -310,7 +317,7 @@ CF.widget.InsightStory = function (targetElem, template, templateEngine, data, o
 	
 	that.getData = function (){
 		data.opts = opts;
-		data.defaultAvatar = CF.config.current.scriptHost + "/images/default-avatar.png";
+//		data.defaultAvatar = CF.config.current.scriptHost + "/images/default-avatar.png";
 		data.currentUser = CF.context.auth_user;
 		return data;
 	};

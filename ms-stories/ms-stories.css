@@ -72,7 +72,7 @@
   width: 330px;
 	height: 80px;
 }
-.cf_widget .cf_stories .cf_pager {background:url(../images/comment/comment_pager_bg.png) repeat-y top center; padding:10px 0; text-align:center;}
+.cf_widget .cf_stories .cf_pager {background:url(images/comment/comment_pager_bg.png) repeat-y top center; padding:10px 0; text-align:center;}
 .cf_widget .cf_stories .cf_replyarea .cf_errormsg {width:300px; postion:absolute; float:right; text-align:right; color:red; font-size:11px;}
 .cf_widget .cf_stories .cf_replyarea .cf_char_holder{width:200px; height:16px; margin-top:-16px; float:right; text-align:right; color:red; font-size:11px;}
 .cf_widget .cf_stories .cf_replyarea .cf_char_holder .cf_why_limit{font-size:10px; text-decoration:none; padding-bottom:3px; padding-left:5px; color:#5b90ca;}
@@ -85,7 +85,7 @@
 .cf_widget .cf_stories .cf_item_empty { margin:10px; color:#999; }
 .cf_widget .cf_stories .cf_comment_text .cf_truncated {color:#1661B4; text-decoration:underline; cursor:pointer; padding-left:5px;}
 .cf_widget .cf_stories .cf_btnrow {padding:10px 0 0; text-align: right;}
-.cf_widget .cf_stories .cf_btnrow .cf_btnPostComment {float: right; background: url(../images/btn-share.png); height: 30px; width: 70px;}
+.cf_widget .cf_stories .cf_btnrow .cf_btnPostComment {float: right; background: url(images/btn-share.png); height: 30px; width: 70px; margin: 5px 70px 0 0;}
 .cf_widget .cf_stories .cf_deleteDialog {width:300px;}
 
 
