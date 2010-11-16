@@ -10,7 +10,7 @@
 	font-size: 22px;
 	font-weight: bold;}
 	
-.cf_widget .cf_stories .cf_arrow {	margin: 0px 0px 10px; padding: 10px 0px 10px 52px; background: url(../images/orange-Arrow.png) no-repeat left;}
+.cf_widget .cf_stories .cf_ms_arrow {	margin: 0px 0px 10px; padding: 10px 0px 10px 52px; background: url(images/orange-Arrow.png) no-repeat left;}
 .cf_widget .cf_stories .cf_alt  { background: #FFE8A0;}
 .cf_widget .cf_stories .cf_commentList {border: 1px solid #CCC;
 	color: #636363;

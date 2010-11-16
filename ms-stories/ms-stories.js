@@ -35,7 +35,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 		that.defaultMsg = "Tell us briefly how Excel tables make life simpler for you...";
 		return "\
 		<div class='cf_stories'>\
-				<div class='cf_commentheader cf_arrow'>How others are using tables</div> \
+				<div class='cf_commentheader cf_ms_arrow'>How others are using tables</div> \
 				<div class='cf_commentList'>\
 				<div class='cf_for' binding='comments'>\
 					<div class='cf_item cf_comment [% (index == length -1) ? \"cf_last\" : \"\" %] cf_comment_depth0'> \
@@ -79,7 +79,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 					</div>\
 					<div class='cf_btnrow'>\
 						<div class='cf_btnPostComment'/>\
-						<div class='cf_loginArea'></div>\
+						<div class='cf_login_holder'/>\
 					</div>\
 				</div>\
 			</div>\
@@ -119,7 +119,6 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	that.superBindEvents = that.bindEvents;
 	that.bindEvents = function (elem, subwidgets)
 	{
-		that.elem = elem;
 		that.superBindEvents(elem, subwidgets);
 		that.bindPagerEvents(elem);
 		elem.find(".cf_signout").click(that.signOut);
@@ -135,7 +134,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 		that.replyBox.keydown(that.countChars);
 		that.charHolder = elem.find(".cf_char_holder");
 		that.charCount = elem.find(".cf_char_count");
-		that.loginArea = elem.find(".cf_loginArea");
+/* 		that.loginArea = elem.find(".cf_loginArea"); */
 
 		var noShare = CF.coerce(CF.cookie.readCookie("CF_commentNoShare"), "bool", false);
 		that.shareCbx = elem.find(".cf_sharecbx").attr('checked',!noShare);
@@ -201,21 +200,12 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 			
 			var shareChecked = that.shareCbx.attr('checked');
 			CF.cookie.createCookie("CF_commentNoShare", (!shareChecked).toString());
-			that.events.fire("commentform_newcomment", that.val, that.loginArea, shareChecked, null, that.postBtn, that.socialIconsElem);
-			
-			
-			
-			var shareChecked = that.shareCbx;
+
+			var shareChecked = that.shareCbx.attr('checked');
 			CF.cookie.createCookie("CF_commentNoShare", (!shareChecked).toString());
 			var o = CF.extend({}, opts);
-			//o.skipSyndication = !share;
-			o.skipSyndication = !shareChecked;
-			CF.log("o.skipSyndication: " + o.skipSyndication);
-			if (o.skipSyndication) {
-				o.postConfirmMessage = "Thank you for submitting your Excel story!";
-			}
-			
-			that.insightMgr.doLoginFlow(that.elem, that.postBtn, null, opts.widgetName,
+			o.skipSyndication = !shareChecked;		
+			that.insightMgr.doLoginFlow(that.loginHolder, that.postBtn, null, opts.widgetName,
 					CF.curry(that.beforeAction, that.doPostComment), 
 					that.performSyndication, o);
 		}
@@ -230,8 +220,15 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	};
 	
 	that.commentPosted = function (comment, error){
-		var postCommentBtn = that.elem.find(".cf_btnPostComment");
-		that.afterActionFx(postCommentBtn, that.postBtn);
+		that.afterActionFx(that.postBtn, that.postBtn);
+		// HB success message
+		var fade = function (){
+			that.hbElem.fadeOut();
+		}
+		var body = CF.build(".cf_success_msg", CF.build(".cf_success_msg_text", opts.postConfirmMessage));
+		that.hb = CF.Hoverbox(that.loginHolder, null,body, null, {pointTo:that.postBtn});
+		that.hbElem = that.hb.getElem();
+		setTimeout(fade, 5000);
 	};
 	
 	that.scrollTo = function (elem){
