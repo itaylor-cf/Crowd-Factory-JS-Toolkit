@@ -3,6 +3,7 @@
   font-size: 0.8em;
   max-width:700px;
   text-align: left;
+  float: none; clear: both;
 }
 
 .cf_widget .cf_stories .cf_commentheader{color: #FF6A00;
@@ -21,36 +22,15 @@
 	position: relative;
 	width: 350px;
 }
+.cf_widget .cf_stories .cf_dialog_container {width:290px;}
+.cf_widget .cf_stories .cf_synd_title {line-height:19px; padding-left: 23px;  font-size: 13px; height: 19px; cursor:pointer; }
 
 .cf_widget .cf_stories .cf_commentheader .cf_right {float:right; font-size:12px; line-height:16px;}
-.cf_widget .cf_stories img.cf_avatar {-ms-interpolation-mode:bicubic; display:block; margin:auto; padding:1px; background-color:#FFF; border:1px solid #a7a7a7; max-width:25px; max-height:25px;}
-
-.cf_widget .cf_stories .cf_avatar_container,
-.cf_widget .cf_stories .cf_dialog div.cf_avatar {float: left; padding-right: 10px; margin:1px 0 0;}
-
-/* affects both reply and OP */ 
-.cf_widget .cf_stories .cf_dialog .cf_synd_message div.cf_avatar {margin-bottom: 50px; /*width: 50px;*/}
-
-.cf_widget .cf_stories .cf_hasavatars .cf_comment_container {margin-left:39px; min-height:54px;
-	border: 1px solid #CCC;
-	color: #636363;
-	height: 259px;
-	margin: 0px 0px 0px 52px;
-	overflow: auto;
-	padding: 8px 0px;
-	position: relative;
-	width: 350px;
-	z-index: 1000;
-}
-.cf_widget .cf_stories .cf_hasavatars .cf_comment_depth0 .cf_comment_container{margin-left:64px;}
 .cf_widget .cf_stories .cf_comment {padding: 15px 12px 10px; margin: 0; text-align:left;}
 .cf_widget .cf_stories .cf_comment_text {font-family: Arial, Helvetica, sans-serif; font-size: 11px;color: #636363;}
-.cf_widget .cf_stories .cf_replyarea .cf_synd_message .cf_avatar{max-width:50px; max-height:50px;}
-
 
 .cf_widget .cf_stories .cf_reply_top {margin-left:10px;}
 .cf_widget .cf_stories .cf_comment_depth0 .cf_comment_container{margin-left:0;}
-.cf_widget .cf_stories .cf_last {border-bottom:none;}
 .cf_widget .cf_stories .cf_username_container {width: 300px; }
 .cf_widget .cf_stories .cf_username{background: url(../images/icon-comment.png) no-repeat;
 	color: #FF6A00;
@@ -64,13 +44,13 @@
 .cf_widget .cf_stories .cf_reply_container .cf_replyprompt { margin-bottom: 5px;}
 .cf_widget .cf_stories .cf_reply_container .cf_replyprompt .cf_signout {color:#5b90ca; cursor:pointer; padding-left:5px; font-size:10px;}
 .cf_widget .cf_stories .cf_replyarea .cf_reply_bounder {width:85%}
-.cf_widget .cf_stories .cf_replyarea .cf_replybox { display: block; color: #959595;
+.cf_widget .cf_stories .cf_replyarea .cf_replybox { display: block; color: #959595; margin-bottom: 5px;
   font-family: Verdana, Geneva, sans-serif;
   font-size: 10px;
-  height: 42px;
   padding: 10px;
-  width: 330px;
+  width: 350px;
 	height: 80px;
+	_margin-left: -50px;
 }
 .cf_widget .cf_stories .cf_pager {background:url(images/comment/comment_pager_bg.png) repeat-y top center; padding:10px 0; text-align:center;}
 .cf_widget .cf_stories .cf_replyarea .cf_errormsg {width:300px; postion:absolute; float:right; text-align:right; color:red; font-size:11px;}
@@ -85,15 +65,14 @@
 .cf_widget .cf_stories .cf_item_empty { margin:10px; color:#999; }
 .cf_widget .cf_stories .cf_comment_text .cf_truncated {color:#1661B4; text-decoration:underline; cursor:pointer; padding-left:5px;}
 .cf_widget .cf_stories .cf_btnrow {padding:10px 0 0; text-align: right;}
-.cf_widget .cf_stories .cf_btnrow .cf_btnPostComment {float: right; background: url(images/btn-share.png); height: 30px; width: 70px; margin: 5px 70px 0 0;}
+.cf_widget .cf_stories .cf_btnrow .cf_btnPostComment {background: url(images/btn-share.png); height: 30px; width: 70px; margin: 5px 0 0 285px;  
+	_position:absolute; _margin-left: -370px; _margin-top:-10px;
+}
 .cf_widget .cf_stories .cf_deleteDialog {width:300px;}
 
 
 /* IE6 hacks... Fake max-width for IE 6 */
 *html .cf_widget .cf_stories {width:100%; _width: expression(this.clientWidth > 700 ? "700px" : this.clientWidth);}
-*html .cf_widget .cf_stories .cf_avatar {height:25px; width:auto;}
-*html .cf_widget .cf_stories .cf_comment_depth0 .cf_avatar{height:50px; width:auto;}
-*html .cf_widget .cf_stories .cf_reply_top .cf_avatar{height:50px; width:auto;}
 /**IE6 can't use bottom */
 *html .cf_widget .cf_stories .cf_reply_container .cf_dialog{bottom:auto; margin-top:-150px;}
 /**IE6 can'r render pngs */

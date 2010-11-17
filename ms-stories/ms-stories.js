@@ -33,6 +33,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	
 	that.getDefaultTemplateBody = function ()
 	{
+		return "";
 		return "\
 		<div class='cf_stories'>\
 				<div class='cf_commentheader cf_ms_arrow'>How others are using tables</div> \
@@ -69,52 +70,18 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 						Tell your Story\
 					</div>\
 					<div class='cf_reply_bounder'>\
-						<div class='cf_char_holder' style='display:none;'>\
-							<span class='cf_char_count'></span> letters remaining\
-							<a class='cf_why_limit' style='display:none;'>why?</a>\
-						</div>\
 						<textarea class='cf_replybox'></textarea>\
-						<label class='cf_sharebox_lbl'><input type='checkbox' class='cf_sharecbx'/>Share this comment</label>\
+						<label class='cf_sharebox_lbl'><input type='checkbox' class='cf_sharecbx'/> Share this comment</label>\
 						<div class='cf_errormsg'></div>\
 					</div>\
 					<div class='cf_btnrow'>\
 						<div class='cf_btnPostComment'/>\
-						<div class='cf_login_holder'/>\
 					</div>\
 				</div>\
 			</div>\
+			<div class='cf_login_holder'/>\
 		</div>\
-		";		
-	};
-	that.countChars = function (evt){
-		var v = that.replyBox.val();
-		var c = that.charMax;
-		var len = v.length;
-		if(len > c){
-			that.replyBox.val(v.substring(0,c));
-			CF.text.setCursorPos(that.replyBox, c);
-			len = c;
-		}
-		if(len == c + 1)
-			evt.preventDefault();
-		if(len < (c - 100))
-			that.charHolder.hide();
-		else{
-			that.charHolder.show();
-			var l = c - len;
-			that.charCount.html(l.toString() + " ");			
-		}	
-		
-		// Shorten textarea in IE by a single pixel to avoid right border disappearing (cws-2608)
-		// Only do this once
-		if (CF.isIE() && !that.w) {
-			that.w = that.replyBox.outerWidth();
-			that.replyBox.width(that.w-1);
-		}
-	};
-	that.isSuckyBrowser = function ()
-	{
-		return CF.isIE6() || CF.isIE7() || CF.isIE8Quirks() || CF.isIE8Compat();
+		<div class='cf_clear'/>";		
 	};
 	that.superBindEvents = that.bindEvents;
 	that.bindEvents = function (elem, subwidgets)
@@ -122,27 +89,20 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 		that.superBindEvents(elem, subwidgets);
 		that.bindPagerEvents(elem);
 		elem.find(".cf_signout").click(that.signOut);
+		that.pointTest = elem.find(".pointTest");
 		
 		// for form
 		that.errMsg= elem.find(".cf_errormsg");
 		elem.find(".cf_signout").click(CF.login.logout);
-		
+		that.loginHolder = elem.find(".cf_login_holder");
 		that.postBtn =  elem.find(".cf_btnPostComment").click(that.postComment);
-
+		
 		that.replyBox = elem.find(".cf_replybox").focus(that.replyBoxFocus).blur(that.replyBoxBlur);
 		that.replyBox.val(that.defaultMsg);
-		that.charMax = 10000;
-		that.replyBox.keydown(that.countChars);
-		that.charHolder = elem.find(".cf_char_holder");
-		that.charCount = elem.find(".cf_char_count");
 
 		var noShare = CF.coerce(CF.cookie.readCookie("CF_commentNoShare"), "bool", false);
 		that.shareCbx = elem.find(".cf_sharecbx").attr('checked',!noShare);
-		if(that.isSuckyBrowser())
-		{
-			that.charMax = 500;
-			that.whyLimitElem = elem.find(".cf_why_limit").show().click(that.showWhyLimit);
-		}
+
 	};
 	that.replyBoxFocus = function () {
 		if(that.replyBox.val()==that.defaultMsg) {
