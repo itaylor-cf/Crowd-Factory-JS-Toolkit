@@ -8,25 +8,27 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 {
 	opts = opts || {};
 	opts.depth = CF.coerce(opts.depth, "int", 0);
-	opts.avatars = CF.coerce(opts.avatars, "bool", false);
 	opts.socialIcons = CF.coerce(opts.socialIcons, "array", []);
-	opts.deleteComments = CF.coerce(opts.deleteComments, "bool", false);
-	opts.actionRequiredMsg = "Please post a comment to continue";
+	opts.actionRequiredMsg = opts.actionRequiredMsg || "Please post a comment to continue";
+	opts.successDuration = opts.successDuration || 5000;
 	opts.widgetHeadlineText = opts.widgetHeadlineText || "Sign in to comment and share:";
+	opts.noStoryMsg = "Your story could be here!  Be the first to tell your story!"; 
+	opts.postConfirmMessage = opts.postConfirmMessage || "Thank you for sharing!";
+	opts.shareTease = opts.shareTease || "Tell us briefly how Excel tables make life simpler for you...";
+	opts.shareTeaseComplete = opts.shareTeaseComplete || "Thanks for sharing! You can share again if you wish...";
+	opts.shareCbxLabel = opts.shareCbxLabel || "Share this with your friends";
+
 	if (!opts.widgetStyle){
 		CF.error("widgetStyle is a required option");
 		return null;
 	}
 	
-	opts.postConfirmMessage = opts.postConfirmMessage || "Thank you for sharing!";
 	
 	var entityIdPassed = opts.entityId;	
 	var that = CF.widget.BaseInsightEntityWidget(targetElem, template, templateEngine, data, opts);
 	if (!entityIdPassed){
 		opts.entityId += "-story";
 	}
-	that = CF.widget.Pageable({}, that);
-	that.defaultMsg = "Tell us briefly how Excel tables make life simpler for you...";
 	
 	that.onReload = function()
 	{
@@ -44,27 +46,18 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 						<div class='cf_widgetLoader' widgetType='CF.widget.InsightStory' data='{comment:item}' options='CF.extend(parent.opts, {showReply:(item.posting_depth < parent.opts.depth)})'></div>\
 					</div> \
 					<div class='cf_item_alt cf_alt cf_comment [% (index == length -1) ? \"cf_last\" : \"\" %] cf_comment_depth0'>\
-					<div class='cf_widgetLoader' widgetType='CF.widget.InsightStory' data='{comment:item}' options='CF.extend(parent.opts, {showReply:(item.posting_depth < parent.opts.depth)})'></div>\
+					<div class='cf_widgetLoader' widgetType='CF.widget.InsightStory' data='{comment:item}' options='parent.opts'></div>\
 					</div>\
 				        <div class='cf_item_empty'> \
 				         	<div class='cf_if' binding='pager.current != 1'>\
 				               There are no comments on this page yet.  \
 				               <div class='cf_else'>\
-				               		No one has commented yet. \
+				               		[%opts.noStoryMsg%]\
 				               </div>\
 				            </div>\
 				         </div> \
 				    </div>\
 				   </div>\
-				<!--<div class='cf_if' binding='pager.show'>\
-					<div class='cf_pager'>\
-						<button class='cf_prev_page cf_btn_small cf_button_green_small' type='button'>Previous</button> \
-						<span class='cf_pagecount'>\
-							Page [% pager.current %] of [% pager.pageCount %]\
-						</span>\
-						<button class='cf_next_page cf_btn_small cf_button_green_small' type='button'>Next</button>\
-					</div>\
-				</div>-->\
 				<div class='cf_replyarea'>\
 				<div class='cf_reply_container'>\
 					<div class='cf_replyprompt cf_commentheader'>\
@@ -72,7 +65,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 					</div>\
 					<div class='cf_reply_bounder'>\
 						<textarea class='cf_replybox'></textarea>\
-						<label class='cf_sharebox_lbl'><input type='checkbox' class='cf_sharecbx'/> Share this comment</label>\
+						<label class='cf_sharebox_lbl'><input type='checkbox' class='cf_sharecbx'/>[%opts.shareCbxLabel%]</label>\
 						<div class='cf_errormsg'></div>\
 					</div>\
 					<div class='cf_btnrow'>\
@@ -88,7 +81,6 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	that.bindEvents = function (elem, subwidgets)
 	{
 		that.superBindEvents(elem, subwidgets);
-		that.bindPagerEvents(elem);
 		elem.find(".cf_signout").click(that.signOut);
 		that.pointTest = elem.find(".pointTest");
 		
@@ -99,20 +91,22 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 		that.postBtn =  elem.find(".cf_btnPostComment").click(that.postComment);
 		
 		that.replyBox = elem.find(".cf_replybox").focus(that.replyBoxFocus).blur(that.replyBoxBlur);
-		that.replyBox.val(that.defaultMsg);
+		that.replyBox.val(opts.shareTease);
 
 		var noShare = CF.coerce(CF.cookie.readCookie("CF_commentNoShare"), "bool", false);
 		that.shareCbx = elem.find(".cf_sharecbx").attr('checked',!noShare);
 
 	};
 	that.replyBoxFocus = function () {
-		if(that.replyBox.val()==that.defaultMsg) {
+		that.replyBox.addClass("cf_active");
+		if(that.replyBox.val()==opts.shareTease || that.replyBox.val() == opts.shareTeaseComplete) {
 			that.replyBox.val('');
 		}
 	}
 	that.replyBoxBlur = function () {
 		if(that.replyBox.val()=='') {
-			that.replyBox.val(that.defaultMsg);
+			that.replyBox.removeClass("cf_active");
+			that.replyBox.val(opts.shareTease);
 		}
 	}
 	that.entityFetched = function (entity)
@@ -134,9 +128,9 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	{
 		CF.context.api_v1.comment_entity_get(that.commentsFetched, entity.uid, 
 		{ 
-			offset:that.getOffset(),
-			max_return:that.getMaxReturn(),
-			order:opts.order,
+			offset:0,
+			max_return:200,
+			order:"MostRecentFirst",
 			depth:opts.depth,
 			status:["NONE","BANNED","DELETED"],
 			show_myflag:true
@@ -147,19 +141,14 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 		if(!error)
 		{
 			that.comments = comments;
-			that.updatePager(that.comments, that.commentCount);
 			that.draw();
 		}
-	};
-	that.pageChanged = function ()
-	{
-		that.getComments(that.entity);
 	};
 	that.postComment = function (){
 		that.val = cf_jq.trim(that.replyBox.val());
 		that.errMsg.html("");
 		CF.log("that.val: " + that.val);
-		if(!that.val || !that.val.length || that.val==that.defaultMsg){
+		if(!that.val || !that.val.length || that.val==opts.shareTease || that.val == opts.shareTeaseComplete){
 			var e = CF.build("div", "Please enter your own comment.");
 			that.errMsg.append(e);
 			setTimeout(function (){
@@ -198,7 +187,9 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 		var body = CF.build(".cf_success_msg", CF.build(".cf_success_msg_text", opts.postConfirmMessage));
 		that.hb = CF.Hoverbox(that.loginHolder, null,body, null, {pointTo:that.postBtn});
 		that.hbElem = that.hb.getElem();
-		setTimeout(fade, 5000);
+		that.replyBox.val(opts.shareTeaseComplete);
+		that.replyBox.removeClass("cf_active");
+		setTimeout(fade, opts.successDuration);
 	};
 	
 	that.scrollTo = function (elem){
@@ -213,13 +204,8 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	
 	that.getData = function ()
 	{
-		var pager = {
-				show: !(that.isFirstPage() && that.isLastPage()),
-				current: that.getPageNum(),
-				pageCount: that.getPageCount()
-			};
 		return {entity:that.entity, commentCount:that.commentCount || 0, opts:opts, 
-			currentUser:CF.context.auth_user, comments:that.comments, pager:pager};
+			currentUser:CF.context.auth_user, comments:that.comments};
 	};
 	that.createEntity = function ()
 	{
@@ -281,14 +267,6 @@ CF.widget.InsightStory = function (targetElem, template, templateEngine, data, o
 					<div class='cf_formholder'></div>\
 				</div>";
 	};
-	
-	that.getData = function (){
-		data.opts = opts;
-//		data.defaultAvatar = CF.config.current.scriptHost + "/images/default-avatar.png";
-		data.currentUser = CF.context.auth_user;
-		return data;
-	};
-	
 	that.computeText= function (){
 		if(!that.computedTxt){//all this text xform is expensive, only do it once.
 			var txt = CF.text;
@@ -298,6 +276,11 @@ CF.widget.InsightStory = function (targetElem, template, templateEngine, data, o
 			that.shortText = txt.smartTruncate(that.fullText, 250);
 			that.computedTxt = true; 
 		}
+	};
+	that.getData = function (){
+		data.opts = opts;
+		data.currentUser = CF.context.auth_user;
+		return data;
 	};
 	that.toggleText = function (){
 		that.textCollapsed = !that.textCollapsed;
@@ -315,48 +298,11 @@ CF.widget.InsightStory = function (targetElem, template, templateEngine, data, o
 		that.txtElem = elem.find(".cf_comment_text");
 		that.computeText();
 		that.drawText();
-		that.reportBtn = elem.find(".cf_btnReport").click(that.reportClicked);
-		that.replyBtn = elem.find(".cf_btnReply").click(that.replyClicked);
-		that.formholder = elem.find(".cf_formholder");
-		that.reportArea = elem.find(".cf_reportarea");
-		that.deleteBtn = elem.find(".cf_btnDelete").click(that.deleteClicked);
-	};
-	that.deleteClicked = function (){
-		that.events.fire("comment_deleted", data.comment.id, that.reportArea, that.deleteBtn);		
-	};
-	
-	that.replyClicked = function () {
-		var e= CF.build(".cf_widgetLoader", {widgetType:"CF.widget.InsightCommentPostForm"});
-		that.replyBtn.hide();
-		that.formholder.html(e);
-		var postFormOpts = {};
-		CF.extend(postFormOpts, opts);
-		CF.extend(postFormOpts, {allowCancel:true, focus:true});
-		var res = CF.widget.process(e, null, postFormOpts);
-		if (res) {
-			that.commentFormObj= res; 
-			res.widget.start();
-			res.widget.events.listen("commentform_newcomment", that.newComment);
-			res.widget.events.listen("commentform_closed", that.closeCommentForm);
-		}
 	};
 	
 	that.newComment = function (evt, body, locElem, share, parentId, buttonObj, socialIconsElem){
 		//Refire the event, adding the comment parent id.
 		that.events.fire(evt, body, locElem, share, data.comment.id, buttonObj, socialIconsElem);
-	};
-	that.closeCommentForm = function ()
-	{
-		that.commentFormObj.widget.remove();//unlisten
-		that.commentFormObj.targetElem.remove();//kick it out of DOM
-		that.replyBtn.show();
-	};
-	
-	that.reportClicked = function ()
-	{	
-		that.events.fire("comment_report_activated", data.comment, that.reportBtn, that.reportArea, that);
-	};
-	
-		
+	};		
 	return that;
 };
