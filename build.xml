@@ -20,6 +20,11 @@
 	<target name='build' depends='clean'>
 		<copy toDir='build/${buildNum}'>
 			<fileset dir='.'>
+				<exclude name=".git/**"/>
+				<exclude name=".project/**"/>
+				<exclude name=".settings/**"/>
+				<exclude name=".metadata/**"/>
+				<exclude name=".DS_Store"/>
 				<exclude name='**/build/**'/>
 				<exclude name='**/build'/>
 				<exclude name='**/build.xml'/>
