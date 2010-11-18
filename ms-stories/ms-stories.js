@@ -18,6 +18,8 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 		return null;
 	}
 	
+	opts.postConfirmMessage = opts.postConfirmMessage || "Thank you for sharing!";
+	
 	var entityIdPassed = opts.entityId;	
 	var that = CF.widget.BaseInsightEntityWidget(targetElem, template, templateEngine, data, opts);
 	if (!entityIdPassed){
@@ -33,7 +35,6 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	
 	that.getDefaultTemplateBody = function ()
 	{
-		return "";
 		return "\
 		<div class='cf_stories'>\
 				<div class='cf_commentheader cf_ms_arrow'>How others are using tables</div> \
@@ -55,7 +56,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 				         </div> \
 				    </div>\
 				   </div>\
-				<div class='cf_if' binding='pager.show'>\
+				<!--<div class='cf_if' binding='pager.show'>\
 					<div class='cf_pager'>\
 						<button class='cf_prev_page cf_btn_small cf_button_green_small' type='button'>Previous</button> \
 						<span class='cf_pagecount'>\
@@ -63,7 +64,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 						</span>\
 						<button class='cf_next_page cf_btn_small cf_button_green_small' type='button'>Next</button>\
 					</div>\
-				</div>\
+				</div>-->\
 				<div class='cf_replyarea'>\
 				<div class='cf_reply_container'>\
 					<div class='cf_replyprompt cf_commentheader'>\

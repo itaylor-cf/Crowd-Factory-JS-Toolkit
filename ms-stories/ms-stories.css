@@ -49,6 +49,8 @@
   font-size: 10px;
   padding: 10px;
   width: 350px;
+  _width: 330px;
+  overflow: auto;
 	height: 80px;
 	_margin-left: -50px;
 }
