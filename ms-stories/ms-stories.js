@@ -1,6 +1,6 @@
 /** 
  * @Class
- * The comment widget for insight.  Supports up to 3 deep threading, and an option to show or not show avatars.
+ * Custom stories widget for MSFT. Similar to comments.
  * 
  */
 
@@ -24,8 +24,11 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	}
 	
 	
+	
+	
 	var entityIdPassed = opts.entityId;	
 	var that = CF.widget.BaseInsightEntityWidget(targetElem, template, templateEngine, data, opts);
+	that.controller = CF.insight.LoginController();
 	if (!entityIdPassed){
 		opts.entityId += "-story";
 	}
@@ -132,7 +135,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 			max_return:200,
 			order:"MostRecentFirst",
 			depth:opts.depth,
-			status:["NONE","BANNED","DELETED"],
+			status:["NONE"],
 			show_myflag:true
 		} );
 	};
@@ -147,7 +150,6 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	that.postComment = function (){
 		that.val = cf_jq.trim(that.replyBox.val());
 		that.errMsg.html("");
-		CF.log("that.val: " + that.val);
 		if(!that.val || !that.val.length || that.val==opts.shareTease || that.val == opts.shareTeaseComplete){
 			var e = CF.build("div", "Please enter your own comment.");
 			that.errMsg.append(e);
@@ -156,17 +158,12 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 			}, 5000);
 
 		} else{
-			
-			var shareChecked = that.shareCbx.attr('checked');
-			CF.cookie.createCookie("CF_commentNoShare", (!shareChecked).toString());
-
 			var shareChecked = that.shareCbx.attr('checked');
 			CF.cookie.createCookie("CF_commentNoShare", (!shareChecked).toString());
 			var o = CF.extend({}, opts);
-			o.skipSyndication = !shareChecked;		
-			that.insightMgr.doLoginFlow(that.loginHolder, that.postBtn, null, opts.widgetName,
-					CF.curry(that.beforeAction, that.doPostComment), 
-					that.performSyndication, o);
+			o.skipSyndication = !shareChecked;	
+			that.controller.setElems(that.loginHolder, that.postBtn);
+			that.controller.startFlow(CF.curry(that.beforeAction, that.doPostComment), that.performSyndication, {}, o);
 		}
 	};
 	that.doPostComment = function (afterActionFx){
@@ -179,7 +176,9 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	};
 	
 	that.commentPosted = function (comment, error){
-		that.afterActionFx(that.postBtn, that.postBtn);
+		if (that.afterActionFx) {
+			that.afterActionFx(that.postBtn, that.postBtn);
+		}
 		// HB success message
 		var fade = function (){
 			that.hbElem.fadeOut();
@@ -190,6 +189,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 		that.replyBox.val(opts.shareTeaseComplete);
 		that.replyBox.removeClass("cf_active");
 		setTimeout(fade, opts.successDuration);
+		that.replyBox.val('');
 	};
 	
 	that.scrollTo = function (elem){
