@@ -164,7 +164,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 			o.skipSyndication = !shareChecked;	
 			that.controller.setElems(that.loginHolder, that.postBtn);
 			that.controller.startFlow(CF.curry(that.beforeAction, that.doPostComment), that.performSyndication, {}, o);
-		}
+		} 
 	};
 	that.doPostComment = function (afterActionFx){
 		that.newBody = that.val;
