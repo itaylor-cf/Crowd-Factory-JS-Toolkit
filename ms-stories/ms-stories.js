@@ -10,14 +10,18 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	opts.depth = CF.coerce(opts.depth, "int", 0);
 	opts.socialIcons = CF.coerce(opts.socialIcons, "array", []);
 	opts.actionRequiredMsg = opts.actionRequiredMsg || "Please post a comment to continue";
-	opts.successDuration = CF.coerce(opts.successDuration, "int", 5000);
 	opts.widgetHeadlineText = opts.widgetHeadlineText || "Sign in to comment and share:";
 	opts.noStoryMsg = opts.noStoryMsg || "Your story could be here!  Be the first to tell your story!"; 
 	opts.postConfirmMessage = opts.postConfirmMessage || "Thank you for sharing!";
 	opts.shareTease = opts.shareTease || "Tell us briefly how Excel tables make life simpler for you...";
 	opts.shareTeaseComplete = opts.shareTeaseComplete || "Thanks for sharing! You can share again if you wish...";
-	opts.shareCbxLabel = opts.shareCbxLabel || "Share this with your friends";
-
+	opts.replyPrompt = opts.replyPrompt || "How do <i>you</i> use tables?";
+	opts.headerText = opts.headerText || "How others are using tables";
+	opts.maxLength = CF.coerce(opts.maxLength, "int", 200);
+	opts.legalText = opts.legalText || "";
+	
+	//opts.afterStoryElem
+	
 	if (!opts.widgetStyle){
 		CF.error("widgetStyle is a required option");
 		return null;
@@ -37,9 +41,8 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	
 	that.getDefaultTemplateBody = function ()
 	{
-		return "\
-		<div class='cf_stories'>\
-				<div class='cf_commentheader cf_ms_arrow'>How others are using tables</div> \
+		return "\<div class='cf_stories'>\
+				<div class='cf_commentheader cf_ms_arrow'>[%opts.headerText%]</div> \
 				<div class='cf_commentList'>\
 				<div class='cf_for' binding='comments'>\
 					<div class='cf_item cf_comment [% (index == length -1) ? \"cf_last\" : \"\" %] cf_comment_depth0'> \
@@ -61,14 +64,15 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 				<div class='cf_replyarea'>\
 				<div class='cf_reply_container'>\
 					<div class='cf_replyprompt cf_commentheader'>\
-						Tell your Story\
+						[%opts.replyPrompt%]\
 					</div>\
 					<div class='cf_reply_bounder'>\
 						<textarea class='cf_replybox'></textarea>\
-						<label class='cf_sharebox_lbl'><input type='checkbox' class='cf_sharecbx'/>[%opts.shareCbxLabel%]</label>\
+						<span class='cf_replycount'></span> characters remaining\
 						<div class='cf_errormsg'></div>\
 					</div>\
 					<div class='cf_btnrow'>\
+						<div class='cf_legalText'>[%opts.legalText%]</div>\
 						<div class='cf_btnPostComment'/>\
 					</div>\
 				</div>\
@@ -90,11 +94,10 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 		that.loginHolder = elem.find(".cf_login_holder");
 		that.postBtn =  elem.find(".cf_btnPostComment").click(that.postComment);
 		
-		that.replyBox = elem.find(".cf_replybox").focus(that.replyBoxFocus).blur(that.replyBoxBlur);
+		that.replyBox = elem.find(".cf_replybox").focus(that.replyBoxFocus).blur(that.replyBoxBlur).keyup(that.replyBoxKeyDown);
 		that.replyBox.val(opts.shareTease);
-
-		var noShare = CF.coerce(CF.cookie.readCookie("CF_commentNoShare"), "bool", false);
-		that.shareCbx = elem.find(".cf_sharecbx").attr('checked',!noShare);
+		that.replyCount = elem.find(".cf_replycount");
+		that.updateCount();
 
 	};
 	that.replyBoxFocus = function () {
@@ -102,13 +105,25 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 		if(that.replyBox.val()==opts.shareTease || that.replyBox.val() == opts.shareTeaseComplete) {
 			that.replyBox.val('');
 		}
-	}
+	};
 	that.replyBoxBlur = function () {
 		if(that.replyBox.val()=='') {
 			that.replyBox.removeClass("cf_active");
 			that.replyBox.val(opts.shareTease);
 		}
-	}
+		that.updateCount();
+	};
+	that.updateCount = function(){
+		var curLen = that.replyBox.val().length;
+		
+		if(curLen >= opts.maxLength){
+			that.replyBox.val(that.replyBox.val().substring(0, opts.maxLength));
+		}
+		that.replyCount.html(""+ (opts.maxLength - that.replyBox.val().length));		
+	};
+	that.replyBoxKeyDown = function (){
+		that.updateCount();	
+	};
 	that.entityFetched = function (entity)
 	{
 		if(!entity)
@@ -156,14 +171,8 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 			}, 5000);
 
 		} else{
-			
-			var shareChecked = that.shareCbx.attr('checked');
-			CF.cookie.createCookie("CF_commentNoShare", (!shareChecked).toString());
-
-			var shareChecked = that.shareCbx.attr('checked');
-			CF.cookie.createCookie("CF_commentNoShare", (!shareChecked).toString());
 			var o = CF.extend({}, opts);
-			o.skipSyndication = !shareChecked;		
+			o.skipSyndication = true;		
 			that.insightMgr.doLoginFlow(that.loginHolder, that.postBtn, null, opts.widgetName,
 					CF.curry(that.beforeAction, that.doPostComment), 
 					that.performSyndication, o);
@@ -181,15 +190,11 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	that.commentPosted = function (comment, error){
 		that.afterActionFx(that.postBtn, that.postBtn);
 		// HB success message
-		var fade = function (){
-			that.hbElem.fadeOut();
+		if(opts.afterStoryElem){
+			cf_jq(opts.afterStoryElem).show();
 		}
-		var body = CF.build(".cf_success_msg", CF.build(".cf_success_msg_text", opts.postConfirmMessage));
-		that.hb = CF.Hoverbox(that.loginHolder, null,body, null, {pointTo:that.postBtn});
-		that.hbElem = that.hb.getElem();
 		that.replyBox.val(opts.shareTeaseComplete);
 		that.replyBox.removeClass("cf_active");
-		setTimeout(fade, opts.successDuration);
 	};
 	
 	that.scrollTo = function (elem){
