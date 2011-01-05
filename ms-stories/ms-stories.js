@@ -70,7 +70,9 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 					</div>\
 					<div class='cf_reply_bounder'>\
 						<textarea class='cf_replybox'></textarea>\
-						<span class='cf_replycount'></span> characters remaining\
+						<div class='cf_replycount_holder'>\
+							<span class='cf_replycount'></span>&nbsp;characters remaining\
+						</div>\
 						<div class='cf_errormsg'></div>\
 					</div>\
 					<div class='cf_btnrow'>\
