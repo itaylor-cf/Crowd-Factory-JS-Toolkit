@@ -7,7 +7,7 @@
 }
 
 .cf_widget .cf_stories .cf_replycount {padding-left:10px;}
-
+.cf_widget .cf_stories .cf_replycount_holder {position:absolute;}
 .cf_widget .cf_stories .cf_commentheader{color: #FF6A00;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 22px;

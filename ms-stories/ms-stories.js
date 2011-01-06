@@ -19,7 +19,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	opts.headerText = opts.headerText || "How others are using tables";
 	opts.maxLength = CF.coerce(opts.maxLength, "int", 200);
 	opts.legalText = opts.legalText || "";
-	
+	opts.afterActionFx = CF.coerce(opts.afterActionFx, "function");
 	//opts.afterStoryElem
 	
 	if (!opts.widgetStyle){
@@ -101,16 +101,20 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 		that.replyBox = elem.find(".cf_replybox").focus(that.replyBoxFocus).blur(that.replyBoxBlur).keyup(that.replyBoxKeyDown);
 		that.replyBox.val(opts.shareTease);
 		that.replyCount = elem.find(".cf_replycount");
+		that.replyCountHolder = elem.find(".cf_replycount_holder").hide();
 		that.updateCount();
 
 	};
 	that.replyBoxFocus = function () {
 		that.replyBox.addClass("cf_active");
+		that.replyCountHolder.show();
 		if(that.replyBox.val()==opts.shareTease || that.replyBox.val() == opts.shareTeaseComplete) {
 			that.replyBox.val('');
 		}
+		that.updateCount();
 	};
 	that.replyBoxBlur = function () {
+		that.replyCountHolder.hide();
 		if(that.replyBox.val()=='') {
 			that.replyBox.removeClass("cf_active");
 			that.replyBox.val(opts.shareTease);
@@ -175,7 +179,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 
 		} else{
 			that.loginController.setElems(that.loginHolder, that.postBtn);
-			that.loginController.startFlow(CF.curry(that.beforeAction, that.doPostComment), {}, opts);
+			that.loginController.startFlow(CF.curry(that.beforeAction, that.doPostComment), null, {}, opts);
 		} 
 	};
 	that.doPostComment = function (afterActionFx){
@@ -195,8 +199,12 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 		if(opts.afterStoryElem){
 			cf_jq(opts.afterStoryElem).show();
 		}
+		if(opts.afterStoryFx){
+			opts.afterStoryFx();
+		}
 		that.replyBox.val(opts.shareTeaseComplete);
 		that.replyBox.removeClass("cf_active");
+		that.loginController.nextStage();
 	};
 	
 	that.scrollTo = function (elem){
