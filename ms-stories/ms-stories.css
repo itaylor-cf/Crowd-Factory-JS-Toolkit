@@ -3,73 +3,74 @@
   font-size: 0.8em;
   text-align: left;
   float: none; clear: both;
+  color: #959595;
 }
+
+.cf_widget .cf_stories .cf_replycount {padding-left:10px;}
 
 .cf_widget .cf_stories .cf_commentheader{color: #FF6A00;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 22px;
 	font-weight: bold;}
 	
-.cf_widget .cf_stories .cf_ms_arrow {	margin: 0px 0px 10px; padding: 10px 0px 10px 52px; background: url(images/orange-Arrow.png) no-repeat left;}
+.cf_widget .cf_stories { margin: 15px 0px 10px 32px;}
+.cf_widget .cf_stories .cf_comment {background:#FFF;}
 .cf_widget .cf_stories .cf_alt  { background: #FFE8A0;}
 .cf_widget .cf_stories .cf_commentList {border: 1px solid #CCC;
 	color: #636363;
-	height: 259px;
-	margin: 0px 0px 0px 52px;
+	height: 210px;
+	margin: 0px 0px 0px 0px;
 	overflow: auto;
-	padding: 8px 0px;
 	position: relative;
-	width: 350px;
+	width: 385px;
+	padding:0;
 }
-.cf_widget .cf_stories .cf_dialog_container {width:290px;}
+.cf_widget .cf_stories .cf_dialog_container {width:275px;}
 .cf_widget .cf_stories .cf_synd_title {line-height:19px; padding-left: 23px;  font-size: 13px; height: 19px; cursor:pointer; }
 
 .cf_widget .cf_stories .cf_commentheader .cf_right {float:right; font-size:12px; line-height:16px;}
-.cf_widget .cf_stories .cf_comment {padding: 15px 12px 10px; margin: 0; text-align:left;}
+.cf_widget .cf_stories .cf_comment { padding: 15px 12px 10px; margin: 0; text-align:left;}
 .cf_widget .cf_stories .cf_comment_text {font-family: Arial, Helvetica, sans-serif; font-size: 11px;color: #636363;}
 
 .cf_widget .cf_stories .cf_reply_top {margin-left:10px;}
 .cf_widget .cf_stories .cf_comment_depth0 .cf_comment_container{margin-left:0;}
 .cf_widget .cf_stories .cf_username_container {width: 300px; }
-.cf_widget .cf_stories .cf_username{background: url(images/icon-comment.png) no-repeat;
+.cf_widget .cf_stories .cf_username{background: url(http://scripthost.crowdfactory.com/ultra/10/ms-stories/images/icon-comment.png) no-repeat;
 	color: #FF6A00;
 	float: right;
 	font-weight: bold;
 	height: 16px;
 	margin: 10px 0px 0px;
-	padding: 0px 0px 0px 35px;}
+	padding: 0px 0px 0px 30px;}
 
 .cf_widget .cf_stories .cf_replyarea {margin:15px 0 0 0;}
-.cf_widget .cf_stories .cf_reply_container .cf_replyprompt { margin-bottom: 5px;}
+.cf_widget .cf_stories .cf_reply_container .cf_replyprompt { margin-bottom: 5px; font-size:16px; color:#8C8C8C;}
 .cf_widget .cf_stories .cf_reply_container .cf_replyprompt .cf_signout {color:#5b90ca; cursor:pointer; padding-left:5px; font-size:10px;}
-.cf_widget .cf_stories .cf_replyarea .cf_reply_bounder {width:85%}
 .cf_widget .cf_stories .cf_replyarea .cf_replybox { display: block; color: #959595; margin-bottom: 5px;
   font-family: Verdana, Geneva, sans-serif;
   font-size: 10px;
   padding: 10px;
-  width: 330px;
+  width: 365px;
   overflow: auto;
   height: 80px;
 }
 .cf_widget .cf_stories .cf_replyarea .cf_active {color:#000;}
 
-.cf_widget .cf_stories .cf_pager {background:url(images/comment/comment_pager_bg.png) repeat-y top center; padding:10px 0; text-align:center;}
+.cf_widget .cf_stories .cf_pager {background:url(http://scripthost.crowdfactory.com/ultra/10/ms-stories/images/comment/comment_pager_bg.png) repeat-y top center; padding:10px 0; text-align:center;}
 .cf_widget .cf_stories .cf_replyarea .cf_errormsg {width:350px; text-align:right; color:red; font-size:11px;}
 .cf_widget .cf_stories .cf_replyarea .cf_char_holder{width:200px; height:16px; margin-top:-16px; float:right; text-align:right; color:red; font-size:11px;}
 .cf_widget .cf_stories .cf_replyarea .cf_char_holder .cf_why_limit{font-size:10px; text-decoration:none; padding-bottom:3px; padding-left:5px; color:#5b90ca;}
 .cf_widget .cf_stories .cf_replyarea .cf_char_holder .cf_why_limit:hover{text-decoration:underline; color:#1661b4;}
 
 /*.cf_widget .cf_stories .cf_hasavatars .cf_comment_container .cf_replyarea {margin-left:-39px;}*/
-.cf_widget .cf_stories .cf_reply_container {padding-left:50px;}
+.cf_widget .cf_stories .cf_reply_container {padding-left:0px;}
 /*.cf_widget .cf_stories .cf_hasavatars .cf_reply_top .cf_reply_container{margin-left:64px;}*/
 .cf_widget .cf_stories .cf_whydlg {width:350px;}
 .cf_widget .cf_stories .cf_item_empty { margin:10px; color:#999; }
 .cf_widget .cf_stories .cf_comment_text .cf_truncated {color:#1661B4; text-decoration:underline; cursor:pointer; padding-left:5px;}
 .cf_widget .cf_stories .cf_btnrow {padding:10px 0 0;}
-.cf_widget .cf_stories .cf_btnrow .cf_btnPostComment {background: url(images/btn-share.png); height: 30px; width: 70px; margin: 5px 0 0 285px;}
+.cf_widget .cf_stories .cf_btnrow .cf_btnPostComment {background: url(images/btn-submit-green.png); height: 30px; width: 70px; margin: 5px 0 0 320px;}
 .cf_widget .cf_stories .cf_deleteDialog {width:300px;}
 
 /**IE6 can'r render pngs */
 *html .cf_widget .cf_stories .cf_pager {background-image:none;}
-
-
