@@ -19,7 +19,7 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	opts.headerText = opts.headerText || "How others are using tables";
 	opts.maxLength = CF.coerce(opts.maxLength, "int", 200);
 	opts.legalText = opts.legalText || "";
-	opts.afterActionFx = CF.coerce(opts.afterActionFx, "function");
+	opts.afterStoryFx = CF.coerce(opts.afterStoryFx, "function");
 	//opts.afterStoryElem
 	
 	if (!opts.widgetStyle){
