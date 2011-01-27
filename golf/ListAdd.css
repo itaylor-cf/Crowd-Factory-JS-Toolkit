@@ -23,3 +23,5 @@
 .cf_widget .cf_listadd .cf_title_label{padding-left:22px; height:19px; line-height:19px; cursor: pointer; }
 .cf_widget .cf_listadd .cf_avatar_tiny {padding-left:0px;}
 .cf_widget .cf_listadd .cf_avatar_tiny .cf_avatar{max-width:22px; max-height:22px; display:inline-block; line-height:22px;}
+
+.cf_widget .cf_listadd .cf_noItems { padding: 5px 10px; color: #666; }

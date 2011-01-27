@@ -5,7 +5,7 @@ CF.widget.ListAdd = function (targetElem, template, templateEngine, data, opts){
 	opts.entityId = CF.insight.getEntityId(opts.entityId);
 	opts.privacyEnabled = CF.coerce(opts.privacyEnabled, "bool", false);
 	opts.widgetHeadlineText = opts.widgetHeadlineText || "Sign in to save as a favorite";
-	opts.noItemsMsg = "There are no items in your list.";
+	opts.noItemsMsg = opts.noItemsMsg || "There are no items in your list.";
 	
 	var that = CF.widget.BaseInsightEntityWidget(targetElem,template, templateEngine, data, opts);
 	that.getDefaultTemplateBody = function ()
@@ -77,31 +77,32 @@ CF.widget.ListAdd = function (targetElem, template, templateEngine, data, opts){
 	};
 	that.updateListBody = function (items){
 		if(items.length == 0){
-			that.listBody.html(".cf_noItems", opts.noItemsMsg);
+			that.listBody.html(CF.build(".cf_noItems", opts.noItemsMsg));
+		} else {
+			var list = CF.build(".cf_listBox", CF.collect(items, function (i, li){
+				var e = li.ExternalEntity;
+				if(e){
+					var share, del;
+					var listItem = CF.build(".cf_listItem", 
+							[
+							 CF.build(".cf_description", [
+								 CF.build(".cf_date", ["Added ", CF.friendlyDate(li.created)]),
+								 CF.build(".cf_title", CF.text.simpleTruncate(e.title, 40))
+							 ]),
+							 CF.build(".cf_actionIcons", 
+									 [
+									  share = CF.build(".cf_share", {title:"Share"}),
+									  del = CF.build(".cf_delete", {title:"Remove"})
+							         ]),
+							 CF.build(".cf_clear")
+							 ]).click(CF.curry(that.visitEntity, e)).hover(that.hoverIn, that.hoverOut);
+					share.click(CF.curry(that.shareClicked, e, listItem));
+					del.click(CF.curry(that.deleteClicked, e, listItem));
+					return listItem;
+				}
+			}));
+			that.listBody.html(list);
 		}
-		var list = CF.build(".cf_listBox", CF.collect(items, function (i, li){
-			var e = li.ExternalEntity;
-			if(e){
-				var share, del;
-				var listItem = CF.build(".cf_listItem", 
-						[
-						 CF.build(".cf_description", [
-							 CF.build(".cf_date", ["Added ", CF.friendlyDate(li.created)]),
-							 CF.build(".cf_title", CF.text.simpleTruncate(e.title, 40))
-						 ]),
-						 CF.build(".cf_actionIcons", 
-								 [
-								  share = CF.build(".cf_share", {title:"Share"}),
-								  del = CF.build(".cf_delete", {title:"Remove"})
-						         ]),
-						 CF.build(".cf_clear")
-						 ]).click(CF.curry(that.visitEntity, e)).hover(that.hoverIn, that.hoverOut);
-				share.click(CF.curry(that.shareClicked, e, listItem));
-				del.click(CF.curry(that.deleteClicked, e, listItem));
-				return listItem;
-			}
-		}));
-		that.listBody.html(list);
 	};
 	that.hoverIn = function (){
 		cf_jq(this).addClass("cf_hover");
