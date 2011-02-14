@@ -182,9 +182,8 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 			that.loginController.startFlow(CF.curry(that.beforeAction, that.doPostComment), null, {}, opts);
 		} 
 	};
-	that.doPostComment = function (afterActionFx){
+	that.doPostComment = function (state){
 		that.newBody = that.val;
-		that.afterActionFx = afterActionFx;
 		CF.context.api_v1.comment_entity_create(that.commentPosted, that.entity.uid, that.val, { 
 			cflog_widgetname:opts.widgetName,
 			widget:opts.widgetName
@@ -192,9 +191,6 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 	};
 	
 	that.commentPosted = function (comment, error){
-		if (that.afterActionFx) {
-			that.afterActionFx(that.postBtn, that.postBtn);
-		}
 		// HB success message
 		if(opts.afterStoryElem){
 			cf_jq(opts.afterStoryElem).show();
