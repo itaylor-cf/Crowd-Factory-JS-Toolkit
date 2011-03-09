@@ -8,7 +8,6 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 {
 	opts = opts || {};
 	opts.depth = CF.coerce(opts.depth, "int", 0);
-	opts.socialIcons = CF.coerce(opts.socialIcons, "array", []);
 	opts.actionRequiredMsg = opts.actionRequiredMsg || "Please post a comment to continue";
 	opts.widgetHeadlineText = opts.widgetHeadlineText || "Sign in to comment and share:";
 	opts.noStoryMsg = opts.noStoryMsg || "Your story could be here!  Be the first to tell your story!"; 
@@ -179,7 +178,11 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 
 		} else{
 			that.loginController.setElems(that.loginHolder, that.postBtn);
-			that.loginController.startFlow(CF.curry(that.beforeAction, that.doPostComment), null, {}, opts);
+			var startingState = {};
+			if(opts.singleProvider){
+				startingState.provider = opts.socialIcons[0];
+			}
+			that.loginController.startFlow(CF.curry(that.beforeAction, that.doPostComment), null, startingState, opts);
 		} 
 	};
 	that.doPostComment = function (state){
