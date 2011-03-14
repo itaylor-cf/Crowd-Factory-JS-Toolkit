@@ -178,11 +178,15 @@ CF.widget.InsightStories = function (targetElem, template, templateEngine, data,
 
 		} else{
 			that.loginController.setElems(that.loginHolder, that.postBtn);
-			var startingState = {};
-			if(opts.singleProvider){
-				startingState.provider = opts.socialIcons[0];
+			
+			var state=that.loginController.manualStartFlow({}, opts);
+			var actionFx = CF.curry(that.beforeAction, that.doPostComment);
+			that.loginController.addStage("actionFx", actionFx);
+			that.loginController.addStage("RPXLogin");
+			if(!state.provider){
+				that.loginController.addStage("SignIn");
 			}
-			that.loginController.startFlow(CF.curry(that.beforeAction, that.doPostComment), null, startingState, opts);
+			that.loginController.nextStage();
 		} 
 	};
 	that.doPostComment = function (state){
