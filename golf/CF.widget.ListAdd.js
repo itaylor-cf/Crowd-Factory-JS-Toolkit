@@ -6,6 +6,8 @@ CF.widget.ListAdd = function (targetElem, template, templateEngine, data, opts){
 	opts.privacyEnabled = CF.coerce(opts.privacyEnabled, "bool", false);
 	opts.widgetHeadlineText = opts.widgetHeadlineText || "Sign in to save as a favorite";
 	opts.noItemsMsg = opts.noItemsMsg || "There are no items in your list.";
+	opts.name = opts.name || "favorites";
+	opts.category = CF.coerce(opts.category, "int", 0);
 	
 	var that = CF.widget.BaseInsightEntityWidget(targetElem,template, templateEngine, data, opts);
 	that.getDefaultTemplateBody = function ()
@@ -39,7 +41,14 @@ CF.widget.ListAdd = function (targetElem, template, templateEngine, data, opts){
 		that.loginController.setElems(that.loginHolder, that.imgBeforeElem);
 	};
 	that.saveClicked = function (){
-		that.verifyLogin(that.saveToList, null, null, opts);
+		var state=that.loginController.manualStartFlow({}, opts);
+		var actionFx = CF.curry(that.beforeAction, that.saveToList);
+		that.loginController.addStage("actionFx", actionFx);
+		that.loginController.addStage("RPXLogin");
+		if(!state.provider){
+			that.loginController.addStage("SignIn");
+		}
+		that.loginController.nextStage();		
 	};
 	that.saveToList = function (){
 		CF.context.api_v1.list_entity_add(that.reload, opts.entityId, opts.category, opts.name, {sequence:Math.round((new Date().getTime()/1000) * -1)});
@@ -166,12 +175,23 @@ CF.widget.ListAdd = function (targetElem, template, templateEngine, data, opts){
 		var changeAccount = function (){
 			CF.login.silentLogout();
 			that.loginController.setElems(that.loginHolder, that.imgAfterArrowElem);
-			that.verifyLogin(that.showListClicked, null, null, opts);
+			var state=that.loginController.manualStartFlow({}, opts);
+			var actionFx = CF.curry(that.beforeAction, that.showListClicked);
+			that.loginController.addStage("actionFx", actionFx);
+			that.loginController.addStage("RPXLogin");
+			if(!state.provider){
+				that.loginController.addStage("SignIn");
+			}
+			that.loginController.nextStage();			
 		};
 		var providerChanged = function(provider){
 			CF.login.silentLogout();
 			that.loginController.setElems(that.loginHolder, that.imgAfterArrowElem);
-			that.verifyLogin(that.showListClicked, null, provider, opts);
+			var state=that.loginController.manualStartFlow({provider:provider}, opts);
+			var actionFx = CF.curry(that.beforeAction, that.showListClicked);
+			that.loginController.addStage("actionFx", actionFx);
+			that.loginController.addStage("RPXLogin");
+			that.loginController.nextStage();
 		};
 		
 		var toggleNetworkIcons = function (){

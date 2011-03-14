@@ -8,10 +8,8 @@ CF.widget.UserActivityView = function (targetElem, template, templateEngine, dat
 		return null;
 	}
 	
-	var user;
-	if (opts.user || CF.context.auth_user) {
-		user = opts.user || CF.context.auth_user;
-	}
+	var user = opts.user || CF.context.auth_user;
+	
 	opts.entityId = opts.entityId  || CF.insight.getEntityId();
 	//opts.entityId += "-activity-view";
 	
@@ -65,7 +63,7 @@ CF.widget.UserActivityView = function (targetElem, template, templateEngine, dat
 //	};
 	
 	that.getActivity = function() {
-		CF.context.api_v1.activityevent_get(that.viewActivity, {activityfilter:"performer", id:user.external_id, idtype:"user"})
+		CF.context.api_v1.activityevent_get(that.viewActivity, {activityfilter:"performer", id:user.external_id, idtype:"user"});
 	};
 	that.viewActivity = function(result, error){
 		if (error || result == null){
@@ -78,7 +76,7 @@ CF.widget.UserActivityView = function (targetElem, template, templateEngine, dat
 		for (i=0; i<rdLen; i+=1) {
 			var rowContent = [
 			                  CF.build(".cf_activity_view_cell", [
-			                                                      user.firstName +  " " + result[i].message + " ",
+			                                                      user.display_name +  " " + result[i].message + " ",
 			                                                      CF.build("a[href="+result[i].participant.ExternalEntity.url+"]", result[i].participant.ExternalEntity.title)
 			                                                      ]),
                               CF.build(".cf_activity_view_cell.cf_date_long", CF.friendlyDate(result[i].created))];
@@ -97,7 +95,13 @@ CF.widget.UserActivityView = function (targetElem, template, templateEngine, dat
 	};
 	that.logInUser = function() {
 		that.loginController.setElems(that.elem, that.elem);
-		that.loginController.startFlow(that.loggedIn, null, {});
+		var state=that.loginController.manualStartFlow({}, opts);
+		that.loginController.addStage("actionFx", that.loggedIn);
+		that.loginController.addStage("RPXLogin");
+		if(!state.provider){
+			that.loginController.addStage("SignIn");
+		}
+		that.loginController.nextStage();
 	};
 	that.loggedIn = function() {
 		that.loginController.nextStage();
@@ -105,6 +109,7 @@ CF.widget.UserActivityView = function (targetElem, template, templateEngine, dat
 			that.title.insertAfter(that.link);
 			that.link.remove();
 		}
+		user = CF.context.auth_user;
 		that.getActivity();
 	};
 	return that;
