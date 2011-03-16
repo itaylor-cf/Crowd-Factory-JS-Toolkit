@@ -14,7 +14,6 @@ CF.widget.ListAdd = function (targetElem, template, templateEngine, data, opts){
 	{
 			return "\
 				<div class='cf_listadd'>\
-					[%CF.log(user, opts)%]\
 					<div class='cf_if' binding='!user && opts.imgBefore'>\
 						<img class='cf_imgButton cf_imgBefore' cf_src='[% opts.imgBefore %]'>\
 					</div>\
@@ -38,9 +37,9 @@ CF.widget.ListAdd = function (targetElem, template, templateEngine, data, opts){
 		that.imgAfterUnsavedElem = elem.find(".cf_imgAfterUnsaved").click(that.saveClicked);
 		that.imgAfterSavedElem = elem.find(".cf_imgAfterSaved");
 		that.imgAfterArrowElem = elem.find(".cf_imgAfterArrow").click(that.showListClicked);
-		that.loginController.setElems(that.loginHolder, that.imgBeforeElem);
 	};
 	that.saveClicked = function (){
+		that.loginController.setElems(that.loginHolder, that.imgBeforeElem);
 		var state=that.loginController.manualStartFlow({}, opts);
 		var actionFx = CF.curry(that.beforeAction, that.saveToList);
 		that.loginController.addStage("actionFx", actionFx);
@@ -54,22 +53,12 @@ CF.widget.ListAdd = function (targetElem, template, templateEngine, data, opts){
 		CF.context.api_v1.list_entity_add(that.reload, opts.entityId, opts.category, opts.name, {sequence:Math.round((new Date().getTime()/1000) * -1)});
 	};
 	that.showListClicked = function (){
-		var title = that.buildProviderHeader();
-		var body= CF.build(".cf_list", 
-				[
-				 that.listBody = CF.build(".cf_listBody"),
-				 CF.build(".cf_pagerControls", [
-                        CF.build(".cf_prev_page", "Previous"),
-      				    CF.build(".cf_next_page", "Next"),
-      				    CF.build(".cf_clear")
-				   ])
-				 ]);
-		
-		var hb = CF.Hoverbox(that.loginHolder, title, body, null, {className:"cf_listdialog", pointTo:that.imgAfterArrowElem});
-		that.pager = CF.widget.Pageable({max_return:5});
-		that.pager.bindPagerEvents(body);
-		that.pager.pageChanged = that.pageChanged;
-		that.pager.pageChanged();
+		that.loginController.setElems(that.loginHolder, that.imgAfterArrowElem);
+		var state = that.loginController.manualStartFlow({currentEntity:that.entity}, opts);
+		that.loginController.registerStageFx("actionFx", that.reloadAndShowList);
+		that.loginController.registerStageFx("syndicationFx", that.performSyndication);
+		that.loginController.addStage("ListViewer");
+		that.loginController.nextStage();
 	};
 	that.fetchEntity = function (){
 		CF.context.api_v1.list_entity_exists(that.listExists, opts.entityId, opts.category, opts.name);
@@ -81,8 +70,67 @@ CF.widget.ListAdd = function (targetElem, template, templateEngine, data, opts){
 			that.draw();
 		}
 	};
-	that.pageChanged = function (){
-		CF.context.api_v1.list_get(that.listFetched, opts.category, opts.name, that.pager.toParams());
+	that.performSyndication = function (state){
+		var params = state.syndParams;
+		params.cflog_widgetname = opts.widgetName;
+		that.syndicate(state.provider, opts.widgetName, state.shareEntity.uid, state.shareEntity.url, params);
+		that.loginController.nextStage();
+	};
+	that.onReload = function()
+	{
+		that.listFinished =false;
+		that.entityFinished = false;
+		that.fetchEntity();
+	};
+	that.listExists = function (result, error){
+		that.listFinished = true;
+		that.inList = result;
+		if(that.entityFinished){
+			that.draw();
+		}
+	};
+	that.getData = function (){
+		return {opts:opts, user:CF.context.auth_user, inList:that.inList};
+	};
+
+	that.reloadAndShowList = function (){
+		that.events.listen("widget_drawn", function (){
+			that.loginController.setElems(that.loginHolder, that.imgAfterArrowElem);
+			that.loginController.nextStage();
+		}, true);
+		that.reload();	
+	};
+	
+	that.buildProviderHeader = function (){
+		var prov = that.getUsersFirstSupportedProvider();
+		var provider = prov != null ?  prov.provider : null;
+		var networkIconContainer, imgArrow, title, titleLabel;
+		var imageDir = CF.config.current.scriptHost+"/images/";
+		var provTitle = prov != null ? prov.title : "";
+		var titleString = CF.context.auth_user != null ? CF.context.auth_user.display_name : provTitle;
+		return;
+	};
+	return that;
+};
+
+CF.insight.StageBuilder("ListViewer", function (state, controller, opts){
+	var that = CF.insight.BaseStage(state, controller, opts);
+	that.getClassName = function (){return "cf_listdialog";};
+	that.fetchData = function (dataFetchCompleteFx){
+		if(CF.context.auth_user){
+			dataFetchCompleteFx();
+		}else{
+			controller.clearStages();
+			//reload the component, User is no longer signed in.
+			controller.addStage("actionFx");
+			controller.nextStage();
+		}
+	};
+	
+	var titleTxt = opts.pleaseWaitTitle || "Processing your request...";
+	var bodyTxt = opts.pleaseWaitBody || "Please wait while we process your request.";
+	that.getTitle = function (){
+		return CF.insight.selectProviderHeader(state,controller,opts,that,CF.context.auth_user.display_name, ["ListViewer", "actionFx", "RPXLogin"]);
 	};
 	that.updateListBody = function (items){
 		if(items.length == 0){
@@ -113,6 +161,9 @@ CF.widget.ListAdd = function (targetElem, template, templateEngine, data, opts){
 			that.listBody.html(list);
 		}
 	};
+	that.pageChanged = function (){
+		CF.context.api_v1.list_get(that.listFetched, opts.category, opts.name, that.pager.toParams());
+	};
 	that.hoverIn = function (){
 		cf_jq(this).addClass("cf_hover");
 	};
@@ -128,121 +179,45 @@ CF.widget.ListAdd = function (targetElem, template, templateEngine, data, opts){
 	};
 	that.shareClicked = function (entity, li, evt){
 		evt.stopPropagation();
-		that.shareEntity = entity;
-		that.performShare();
+		state.shareEntity = entity;
+		state.entityTitle = entity.title;
+		controller.addStage("syndicationFx");
+		controller.addStage("ShareResolver");
+		controller.nextStage(state);
 	};
-	that.performShare = function (){
-		var provider = that.getUsersFirstSupportedProvider().provider;
-		that.loginController.setElems(that.loginHolder, that.imgAfterArrowElem);
-		that.loginController.startFlow(that.shareAction, that.performSyndication, {entityTitle:that.entity.title, provider:provider}, opts);		
+	that.getBody = function (){
+		var body= CF.build(".cf_list", 
+				[
+				 that.listBody = CF.build(".cf_listBody"),
+				 CF.build(".cf_pagerControls", [
+                        CF.build(".cf_prev_page", "Previous"),
+      				    CF.build(".cf_next_page", "Next"),
+      				    CF.build(".cf_clear")
+				   ])
+				 ]);
+		that.pager = CF.widget.Pageable({max_return:5});
+		that.pager.bindPagerEvents(body);
+		that.pager.pageChanged = that.pageChanged;
+		that.pager.pageChanged();
+		return body;
 	};
-	that.shareAction = function (){
-		that.loginController.nextStage();
+	that.checkState = function (){
+		return true;
 	};
-	that.performSyndication = function (state){
-		var params = state.syndParams;
-		params.cflog_widgetname = opts.widgetName;
-		that.syndicate(state.provider, opts.widgetName, that.shareEntity.uid, that.shareEntity.url, params);
-		that.loginController.nextStage();
-	};
+
 	that.deleteClicked = function (entity, li, evt){
 		evt.stopPropagation();
-		CF.context.api_v1.list_entity_remove(that.pager.pageChanged, entity.uid, opts.category, opts.name);
+		var removeCompleteFx = that.pager.pageChanged;
+		if(state.currentEntity && entity.uid == state.currentEntity.uid){
+			controller.addStage("ListViewer");
+			controller.addStage("actionFx");
+			controller.nextStage();
+		}
+		CF.context.api_v1.list_entity_remove(removeCompleteFx, entity.uid, opts.category, opts.name);
 	};
+
 	that.visitEntity = function (entity){
 		location.href = entity.url;
 	};
-	that.onReload = function()
-	{
-		that.onStart();
-	};
-	that.listExists = function (result, error){
-		that.listFinished = true;
-		that.inList = result;
-		if(that.entityFinished){
-			that.draw();
-		}
-	};
-	that.getData = function (){
-		return {opts:opts, user:CF.context.auth_user, inList:that.inList};
-	};
-
-	that.buildProviderHeader = function (){
-		var prov = that.getUsersFirstSupportedProvider();
-		var networkIconContainer, imgArrow, title, titleLabel;
-		var imageDir = CF.config.current.scriptHost+"/images/";
-		
-		var changeAccount = function (){
-			CF.login.silentLogout();
-			that.loginController.setElems(that.loginHolder, that.imgAfterArrowElem);
-			var state=that.loginController.manualStartFlow({}, opts);
-			var actionFx = CF.curry(that.beforeAction, that.showListClicked);
-			that.loginController.addStage("actionFx", actionFx);
-			that.loginController.addStage("RPXLogin");
-			if(!state.provider){
-				that.loginController.addStage("SignIn");
-			}
-			that.loginController.nextStage();			
-		};
-		var providerChanged = function(provider){
-			CF.login.silentLogout();
-			that.loginController.setElems(that.loginHolder, that.imgAfterArrowElem);
-			var state=that.loginController.manualStartFlow({provider:provider}, opts);
-			var actionFx = CF.curry(that.beforeAction, that.showListClicked);
-			that.loginController.addStage("actionFx", actionFx);
-			that.loginController.addStage("RPXLogin");
-			that.loginController.nextStage();
-		};
-		
-		var toggleNetworkIcons = function (){
-			var curSrc = imgArrow.attr("src");
-			if(networkIconContainer.is(":visible")){
-				imgArrow.attr("src", curSrc.replace("-down", "-side"));
-				networkIconContainer.hide();
-			}
-			else{
-				imgArrow.attr("src", curSrc.replace("-side", "-down"));
-				networkIconContainer.show();
-			}
-		};
-		
-		var excludeIcons = prov.isEmail ? "email" : prov.provider;
-		
-		var icons = "";
-		if(!opts.singleProvider){
-			var icons = that.getProviderIcons(providerChanged, excludeIcons, true, null, true);
-		}
-		var avatarUrl = "";
-		var u= CF.context.auth_user;
-		var userName = "";
-		var className = prov.className;
-		if(u && u.profile_photo_url){
-			avatarUrl = u.profile_photo_url;
-			className ='cf_avatar_tiny';
-			userName = u.display_name;
-		}
-		var avatar;
-		var titleString = userName || prov.title;
-		title = CF.build(".cf_title_wrap", [
-	            	titleLabel = CF.build(".cf_title_label."+ className, [
-	                  avatar = CF.build("img.cf_avatar", {src:avatarUrl}),
-	                  imgArrow = CF.build("img.cf_arrow", {src:imageDir+"network-arrow-side.png"}),
-	   		          titleText = CF.build("span.cf_title_text", titleString)]),
-	   		        networkIconContainer = CF.build(".cf_network_icon_container", 
-	   						CF.build(".cf_synd_icons", [
-	   						   icons,
-	   						   CF.build("a.cf_notyou", "Change account").click(changeAccount),
-	   						   CF.build(".cf_clear")]
-	   						  ))
-	   		     ]);
-		if(!avatarUrl){
-			avatar.hide();
-		}
-		titleLabel.click(toggleNetworkIcons);
-		return title;
-	};
-	
-	
-	
-	return that;
-};
+	return that;	
+});
