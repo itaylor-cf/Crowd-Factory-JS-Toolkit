@@ -1,0 +1,59 @@
+.cf_hbo_comments .commenting .cf_comments {margin: 0 10px 0 0;}
+.cf_hbo_comments .commenting .cf_comments .cf_pager {background:none;color:#bdbdbd;}
+.cf_hbo_comments .commenting .cf_comments .cf_commentheader {background:#555555;display:block;color:#bdbdbd;}
+.cf_hbo_comments .commenting .cf_comments .cf_comment_container .cf_comment_metadata .cf_commentdate {color:#bdbdbd;}
+.cf_hbo_comments .commenting {display:block;margin:15px 0 0 0;width:465px;min-height:220px;clear:both;background:#555555;padding:0 0 20px 0;border:1px solid #5E5E5E;}
+#add-comment-area {display:none; /* hides redundant comment box */ }
+.cf_hbo_comments .journal-comment-area .text, .journal-comment-area .caption {display:none;}
+.cf_hbo_comments .outer-wrapped {clear:both;display:block;width:400px;}
+.cf_hbo_comments .cf_comments .cf_comment_container .cf_profilelink a, .cf_hbo_comments .cf_comment_text, .cf_hbo_comments .cf_username {color:#fff;}
+.cf_hbo_comments .commenting .cf_comments .cf_comment_container .cf_truncated {color:#d7bf50;}
+.cf_hbo_comments .commenting .cf_comments .cf_comment_container .cf_username a {color:#D7BF50;}
+.cf_hbo_comments .commenting .cf_btn_sq_blue, 
+.cf_hbo_comments.commenting .cf_btn_sq_white {background:#333333;color:#D7BF50;padding:4px 10px 4px 10px;}
+.cf_hbo_comments .commenting .cf_btn_sq_blue:hover, 
+.cf_hbo_comments.commenting .cf_btn_sq_white:hover {background:#fff;color:#333333;padding:4px 10px 4px 10px;}
+.cf_hbo_comments .commenting .cf_btnReply,
+.cf_hbo_comments .commenting .cf_btnReply:hover  {background:url("http://imagecms2.crowdfactory.com/cms/-mXYsp0rywrt-m7i_SoLbe_/xlrgr0004676291b0-203a-43c6-a7db-705e7a1b5e1e.png") no-repeat;border:none;text-indent:-3000px;width:60px;height:20px;}
+.cf_hbo_comments .commenting .cf_btnPostComment,
+.cf_hbo_comments .commenting .cf_btnPostComment:hover {background:url("http://imagecms2.crowdfactory.com/cms/-0B6WI008D5Zt-0_QwMB-0wU9Ld/xlrgr000488d45920-e9fb-4fe5-87c6-94d513b1e76a.png") no-repeat;border:none;text-indent:-3000px;width:100px;height:26px;}
+.cf_hbo_comments .commenting .cf_btnCancel {background:transparent;border:none;float:right;margin:2px 225px 0 0;}
+.cf_hbo_comments .commenting .cf_btnReport {background:transparent;color:#D7BF50;}
+.cf_hbo_comments .commenting .cf_btnReport:hover {background:transparent;color:#bdbdbd;}
+.cf_hbo_comments .commenting .cf_comments .cf_replyarea .cf_replybox {background:#ececec;font-size:12px;font-family:'Lucida Sans Unicode','Lucida Grande',Tahoma,sans-serif;border-color:#333333 #333333 #333333 #333333;border-style:solid;border-width:1px;display:block;height:100px;width:100%;}
+.cf_hbo_comments .commenting .cf_replyprompt {color:#EAEAD7;}
+.cf_hbo_comments .cf_replybox textarea {margin:0px;padding:0px;}
+.cf_hbo_comments .share-text {margin:6px 20px 0 6px;float:right;width:120px;}
+.cf_hbo_comments .caption {color:#bcbcbc;}
+.cf_hbo_comments .caption-text {color:#969696;}
+.cf_hbo_comments .cf_w_GOTfbOnly .cf_socialicons .cf_facebook {height:22px;width:22px;-moz-background-clip:border;-moz-background-inline-policy:continuous;-moz-background-origin:padding;background:transparent url(http://imagecms2.crowdfactory.com/cms/thLLg-0VAZ9khv7YGWqU8n/xlrgr0004f3964bdf-e9c9-4d05-89b2-2faaa7f1eb0d.png) no-repeat scroll left center;}
+.cf_hbo_comments .cf_w_GOTtwitterOnly .cf_socialicons .cf_twitter {height:22px;width:22px;-moz-background-clip:border;-moz-background-inline-policy:continuous;-moz-background-origin:padding;background:transparent url("http://imagecms2.crowdfactory.com/cms/045SfT02CvRE-92UZFSbOpG/xlrgr0004641006e4-c0d0-4400-9349-aeea3928414d.png") no-repeat scroll left center;}
+.cf_hbo_comments .commenting .cf_prev_page {background:url("http://imagecms2.crowdfactory.com/cms/0E8-P6-0zUYFy-yvWSCYxW6y/xlrgr00044e67d74b-f2c4-4b1f-866a-4f307bc87472.png") no-repeat 20px 3px;border:none;text-indent:-3000px;width:100px;height:26px;}
+.cf_hbo_comments .commenting .cf_next_page {background:url("http://imagecms2.crowdfactory.com/cms/-97VkcyPOT-08hVTr-P8qW9/xlrgr00041069a4ea-80c2-465a-8f2d-72d4debf4b17.png") no-repeat 0px 3px;border:none;text-indent:-3000px;width:100px;height:26px;}
+
+.cf_hbo_comments #shareblock tbody td {margin:10px 0px;padding:3px 0 0 0;}
+.cf_hbo_comments #comment-cf .cf_right a {color:#83a0d0;}
+.cf_hbo_comments #comment-cf .cf_right a,
+.cf_hbo_comments #comment-cf .cf_widget .cf_signout  {color:#83a0d0;}
+
+/*
+#sidebar1 .cf_widget .cf_dialog {
+  top: 380px;
+	left: 850px;
+}
+*/
+.cf_hbo_comments .cf-share-item {
+margin-top:-1px;
+}
+.cf_hbo_comments .cf-share-item .cf_socialicon {margin-right:10px;}
+
+.cf_hbo_comments .cf-post-comments {line-height:16px;}
+
+.cf_hbo_comments .cf_hbo_comment_prompt {height: 20px; line-height: 20px; margin-bottom: 10px;}
+.cf_hbo_comments .cf_hbo_comment_ul {height: 20px; padding: 0 0 0 0;}
+.cf_hbo_comments .cf_hbo_comment_li1 {display: block; float: left; position: relative; height: 100%; width: auto; padding-right: 10px;}
+.cf_hbo_comments .cf_hbo_comment_li1 .inline-icon {display:inline-block;}
+.cf_hbo_comments .cf_hbo_comment_ul .cf-comment-item {display: block; float: left; position: relative; height: 100%; width: 100px;}
+.cf_hbo_comments .cf_hbo_comment_ul .cf-share-item {display: block; float: left; position: relative; height: 100%; width: auto; padding-right: 10px;}
+.cf_hbo_comments .cf_hbo_comment_main {margin-top:2em;}
+.cf_hbo_comments .cf_post_icon { background: url(images/comment.png) no-repeat top left; width:16px; height:16px; float:left; margin-right:6px}
