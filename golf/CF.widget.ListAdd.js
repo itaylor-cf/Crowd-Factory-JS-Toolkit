@@ -47,6 +47,9 @@ CF.widget.ListAdd = function (targetElem, template, templateEngine, data, opts){
 		if(!state.provider){
 			that.loginController.addStage("SignIn");
 		}
+		if(state.provider == "email"){
+			that.loginController.addStage("EmailProviderSelect");
+		}
 		that.loginController.nextStage();		
 	};
 	that.saveToList = function (){
