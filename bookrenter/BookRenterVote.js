@@ -15,14 +15,22 @@ CF.widget.BookRenterVote = function(targetElem, template, templateEngine, data, 
     if (entity && entity.entity_ratings) {
       return CF.arrayFind(entity.entity_ratings, function(i, r) {
         if (r.category == opts.rating) {
-          r.actionCount = Math.round(r.count * r.average_rating);
+          r.actionCount = Math.round(r.count * (r.average_rating || 0));
           return r;
         }
       });
     }
     return { count : 0, actionCount : 0 };
   };
+  var commaInsertRegex = /\B(?=(?:\d{3})+(?!\d))/g;
 
+  that.encomma = function (num){
+    if(!num){
+      num = 0;
+    }
+    return num.toString().replace(commaInsertRegex, ",");
+  }
+  
   that.render = function() {
     that.rating = that.getRating(that.entity);
     var isRated = synchronizer.hasRated[opts.entityId];
@@ -30,7 +38,7 @@ CF.widget.BookRenterVote = function(targetElem, template, templateEngine, data, 
     if(that.entity && isRated){
       wrapClass += ".cf_active";
     }
-    var countElem = CF.build(wrapClass, CF.build(".cf_countBubble", "" + that.rating.actionCount));
+    var countElem = CF.build(wrapClass, CF.build(".cf_countBubble", that.encomma(that.rating.actionCount)));
     if(isRated && opts.whenRatedFx){
       setTimeout(opts.whenRatedFx, 10);
     }
