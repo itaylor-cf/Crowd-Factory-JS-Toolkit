@@ -128,7 +128,7 @@ CF.widget.BookRenterVote.synchronizer = function() {
     that.fetchInProgress[entityId] = false;
     if (!error && entity && entity.entity_ratings) {
       cf_jq.each(entity.entity_ratings, function(i, r) {
-        if (that.ratings.indexOf(r.category) != -1 && r.user_rating) {
+        if (CF.arrayIndexOf(that.ratings, r.category) != -1 && r.user_rating) {
           that.hasRated[entityId] = true;
         }
       });
