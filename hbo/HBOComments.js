@@ -86,11 +86,14 @@ CF.widget.HBOComments = function (targetElem, template, templateEngine, data, op
 						that.updateCommentCount(w.commentCount);
 						if(opts.scrollToCommentEntry){
 							var wrap = elem.find(".cf_comment_post_form_wrap");
-							if(wrap && wrap.length){
+							if(wrap && wrap.length && !(CF.isIE6() || CF.isIE7() || CF.isIE8Compat() || CF.isIE8Quirks())){
 								var offset = wrap.offset().top -100;
 								cf_jq("html,body").animate({scrollTop:offset}, 500, function (){
 									wrap.find("textarea").focus();
 								});
+							}
+							else{
+								wrap.find("textarea").focus();
 							}
 							
 						}
