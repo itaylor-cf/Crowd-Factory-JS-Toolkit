@@ -208,7 +208,7 @@ CF.insight.StageBuilder("BookRenterEmail", function(state, controller, opts) {
   
   that.makeEmail = function(extProfile) {
     that.emailLabel = CF.build("label", { "for" : "cf_email" }, "Your Email");
-    that.emailObj = { validator : "email", className : "cf_validate cf_required", value : that.ns(extProfile.email),
+    that.emailObj = { validator : "email", "class" : "cf_validate cf_required", value : that.ns(extProfile.email),
       validator_msg : 'Please enter a valid email address' };
     that.elethatmail = CF.build("input[type=text]#cf_email", that.emailObj).keydown(CF.enterPressed(that.save));
     var elem = CF.build(".cf_regform_row", [ that.emailLabel, that.elethatmail ]);;
